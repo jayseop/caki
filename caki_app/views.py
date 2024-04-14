@@ -7,6 +7,9 @@ from django.http import HttpResponse
 from .models import Member
 import datetime
 
+def main_page(request):
+    return render(request, 'main.html')
+
 #회원가입
 def user_signup(request):
     if request.method == 'POST': # 정보를 받아옴
@@ -68,7 +71,7 @@ def user_login(request):
             #login(request, user) 
             
             #return redirect('/')  # 로그인 성공 시 리다이렉트할 URL
-            return HttpResponse("login successful!") # 로그인 성공시 화면
+            return render(request, 'main.html')
 
         else:
             # 비밀번호가 일치하지 않을 경우, 에러 메시지 반환
