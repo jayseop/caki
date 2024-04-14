@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from caki_app.models import Member
+from .models import Member
 import datetime
 
 #회원가입
@@ -14,9 +14,9 @@ def user_signup(request):
         password1 = request.POST['password1']
         password2 = request.POST['password2']
         email = request.POST['email']
-        date = datetime.datetime.now().date()
-        qual = 1 if request.POST.get('qual') else 0 # 전문성이 있으면 1 없으면 0
-        introduce = request.POST['introduce']
+        #date = datetime.datetime.now().date()
+        #qual = 1 if request.POST.get('qual') else 0 # 전문성이 있으면 1 없으면 0
+        #introduce = request.POST['introduce']
 
         # 비밀번호 확인
         if password1 != password2:
@@ -33,11 +33,12 @@ def user_signup(request):
 
         # 회원 생성 및 데이터베이스에 저장
         user = Member.objects.create(nickname=nickname, 
-                                     email=email, 
-                                     pwd=password1, 
-                                     date = date, 
-                                     qual = qual,
-                                     introduce = introduce)
+                                    email=email, 
+                                    password=password1, 
+                                    #date = date, 
+                                    #qual = qual,
+                                    #introduce = introduce
+                                     )
         user.save() 
 
 
@@ -62,7 +63,7 @@ def user_login(request):
             return HttpResponse("User does not exist")
 
         # 비밀번호 인증
-        if user.pwd == password:
+        if user.password == password:
             # 비밀번호가 일치할 경우, 로그인 처리
             #login(request, user) 
             
