@@ -61,3 +61,6 @@ class Theme(models.Model):
 class Temp(models.Model):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+
+# 테스트입니다.
