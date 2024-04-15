@@ -1,14 +1,30 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from rest_framework import serializers
+
+class UserManager(BaseUserManager):
+    def create_user(self, email, password, **kwargs):
+        if not email:
+            raise ValueError('Users must have an email address')
+        user = self.model(
+            email=email,
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
 # Member 모델
-class Member(models.Model):
+class Member(AbstractBaseUser):
     idMember = models.AutoField(primary_key=True)
-    email = models.CharField(max_length=30)
+    email = models.CharField(max_length=30,unique=True)
     password = models.CharField(max_length=30)
     nickname = models.CharField(max_length=45)
     date = models.DateTimeField(auto_now_add=True)
     qual = models.CharField(max_length=45, default='0')
     introduce = models.CharField(max_length=100, blank=True, null=True)
+
+    USERNAME_FIELD = 'email'
+    objects = UserManager()
 
     class Meta:
         db_table = 'Member'

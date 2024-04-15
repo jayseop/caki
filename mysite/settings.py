@@ -48,12 +48,14 @@ INSTALLED_APPS = [
 ]
 
 # user 앱에서 내가 설정한 User를 사용하겠다고 설정한다.
-#AUTH_USER_MODEL = 'myapp.User'
+AUTH_USER_MODEL = 'caki_app.Member'
 
 # jwt 토큰은 simplejwt의 JWTAuthentication으로 인증한다.
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication'
     )
 }
 
@@ -127,7 +129,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bartender',
+        'NAME': 'mydb',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': '127.0.0.1',

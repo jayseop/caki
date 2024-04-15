@@ -1,11 +1,14 @@
 from django.contrib import admin
 from django.urls import path
-from .import views
+from .views import *
+from rest_framework_simplejwt.views import TokenRefreshView
 
-app_name = 'myapp'
+
+app_name = 'caki_app'
 
 urlpatterns = [
-    path('',views.main_page, name='main'), #메인 페이지 url
-    path('login/', views.user_login, name='login'), # 일단 로그인 url, 메인 url로 설정 추후 변경 예정
-    path('signup/', views.user_signup, name='signup') # 회원가입 페이지 url 
+    # path('', main_page, name='main'), #메인 페이지 url
+    path("signup/", SignupAPIView.as_view(), name='signup'), # post - 회원가입
+    path('authuser/', AuthUserAPIView.as_view(), name='authuser'), # 
+    path("authsuer/refresh/", TokenRefreshView.as_view()), # jwt 토큰 재발급
 ]
