@@ -1,14 +1,11 @@
 from django.contrib.auth import authenticate
-from django.contrib.auth import login
 from django.contrib.auth.models import User
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.http import HttpResponse
-import datetime
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework.views import APIView
-import jwt
 from .serializers import *
 from mysite.settings import SECRET_KEY
 
@@ -31,7 +28,7 @@ class SignupAPIView(APIView):
             res = Response(
                 {
                     "user": serializer.data,
-                    "message": "register successs",
+                    "message": "signup successs",
                     "token": {
                         "access": access_token,
                         "refresh": refresh_token,
@@ -44,7 +41,7 @@ class SignupAPIView(APIView):
             res.set_cookie("access", access_token, httponly=True)
             res.set_cookie("refresh", refresh_token, httponly=True)
             
-            return HttpResponse(res) #로그인 성공시 페이지
+            return HttpResponse('signup successs') #회원가입 성공시 페이지
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request):
@@ -83,28 +80,7 @@ class AuthUserAPIView(APIView):
         # except(jwt.exceptions.InvalidTokenError):
         #     # 사용 불가능한 토큰일 때
         #     return Response(status=status.HTTP_400_BAD_REQUEST)
-        
-
-        # 토큰 만료 시 토큰 갱신
-        if(jwt.exceptions.ExpiredSignatureError):
-            data = {'refresh': request.COOKIES.get('refresh', None)}
-            serializer = TokenRefreshSerializer(data=data)
-            if serializer.is_valid(raise_exception=True):
-                access = serializer.data.get('access', None)
-                refresh = serializer.data.get('refresh', None)
-                payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
-                pk = payload.get('user_id')
-                user = get_object_or_404(User, pk=pk)
-                serializer = UserSerializer(instance=user)
-                res = Response(serializer.data, status=status.HTTP_200_OK)
-                res.set_cookie('access', access)
-                res.set_cookie('refresh', refresh)
-                return HttpResponse(res)
-            raise jwt.exceptions.InvalidTokenError
-
-        # 사용 불가능한 토큰일 때
-        if(jwt.exceptions.InvalidTokenError):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+ 
         
         return render(request,'login.html')
 
@@ -136,13 +112,13 @@ class AuthUserAPIView(APIView):
             # jwt 토큰 => 쿠키에 저장
             res.set_cookie("access", access_token, httponly=True)
             res.set_cookie("refresh", refresh_token, httponly=True)
-            return res
+            return HttpResponse('login successs')
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     # 로그아웃
     def delete(self, request):
-        # 쿠키에 저장된 토큰 삭제 => 로그아웃 처리
+        # 쿠키에 저장된 토큰 삭제
         response = Response({
             "message": "Logout success"
             }, status=status.HTTP_202_ACCEPTED)
