@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 ]
 
-# user 앱에서 내가 설정한 User를 사용하겠다고 설정한다.
+# caki_app 앱에서 내가 설정한 Member를 사용하겠다고 설정한다.
 AUTH_USER_MODEL = 'caki_app.Member'
 
 # jwt 토큰은 simplejwt의 JWTAuthentication으로 인증한다.
@@ -59,7 +59,7 @@ REST_FRAMEWORK = {
     )
 }
 
-# 추가적인 JWT 설정, 다 쓸 필요는 없지만 혹시 몰라서 다 넣었다.
+# 추가적인 JWT 설정
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -77,7 +77,7 @@ SIMPLE_JWT = {
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'idMember',
+    'USER_ID_FIELD': 'idmember', #Member table idmember
     'USER_ID_CLAIM': 'user_id',
     'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
 

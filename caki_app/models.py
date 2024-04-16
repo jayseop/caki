@@ -27,13 +27,14 @@ class UserManager(BaseUserManager):
 
 # AbstractBaseUser를 상속해서 유저 커스텀
 # Member 모델
+
 class Member(AbstractBaseUser):
-    idMember = models.AutoField(primary_key=True)
-    email = models.EmailField(max_length=30,unique=True)
+    idmember = models.BigAutoField(db_column='idMember', primary_key=True)  # Field name made lowercase.
+    email = models.CharField(unique=True, max_length=30)
     password = models.CharField(max_length=130)
-    nickname = models.CharField(max_length=45)
-    date = models.DateField(auto_now_add=True)
-    qual = models.CharField(max_length=4, default='0')
+    nickname = models.CharField(unique=True, max_length=45)
+    date = models.DateTimeField(auto_now_add=True)
+    qual = models.CharField(max_length=4)
     introduce = models.CharField(max_length=100, blank=True, null=True)
     
     last_login = None
@@ -45,9 +46,9 @@ class Member(AbstractBaseUser):
 
 
 class Post(models.Model):
-    idpost = models.IntegerField(db_column='idPost', primary_key=True)  # Field name made lowercase. The composite primary key (idPost, Member_idMember) found, that is not supported. The first column is selected.
+    idpost = models.BigAutoField(db_column='idPost', primary_key=True)  # Field name made lowercase.
     title = models.CharField(max_length=300)
-    date = models.CharField(max_length=45)
+    date = models.DateTimeField()
     view = models.CharField(max_length=45)
     text = models.CharField(max_length=8000)
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
@@ -55,19 +56,19 @@ class Post(models.Model):
     class Meta:
         managed = False
         db_table = 'post'
-        unique_together = (('idpost', 'member_idmember'),)
 
 class Cocktail(models.Model):
-    idcocktail = models.BigAutoField(db_column='idCocktail', primary_key=True)  # Field name made lowercase. The composite primary key (idCocktail, Post_idPost) found, that is not supported. The first column is selected.
+    idcocktail = models.BigAutoField(db_column='idCocktail', primary_key=True)  # Field name made lowercase.
     title = models.CharField(max_length=100)
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
 
     class Meta:
         managed = False
         db_table = 'cocktail'
-        unique_together = (('idcocktail', 'post_idpost'),)
+
+
 class Image(models.Model):
-    idimage = models.BigIntegerField(db_column='idImage', primary_key=True)  # Field name made lowercase.
+    idimage = models.BigAutoField(db_column='idImage', primary_key=True)  # Field name made lowercase.
     image_name = models.CharField(max_length=100)
     image_path = models.CharField(max_length=300)
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
@@ -78,31 +79,29 @@ class Image(models.Model):
 
 
 class Ingredient(models.Model):
-    idingredient = models.BigIntegerField(db_column='idIngredient', primary_key=True)  # Field name made lowercase. The composite primary key (idIngredient, Cocktail_idCocktail) found, that is not supported. The first column is selected.
+    idingredient = models.BigAutoField(db_column='idIngredient', primary_key=True)  # Field name made lowercase.
     name = models.CharField(max_length=100)
     price = models.BigIntegerField(blank=True, null=True)
     alcohol = models.IntegerField()
     cocktail_idcocktail = models.ForeignKey(Cocktail, models.DO_NOTHING, db_column='Cocktail_idCocktail')  # Field name made lowercase.
-
+    
     class Meta:
         managed = False
         db_table = 'ingredient'
-        unique_together = (('idingredient', 'cocktail_idcocktail'),)
 
 
 class Keep(models.Model):
-    idkeep = models.BigIntegerField(db_column='idKeep', primary_key=True)  # Field name made lowercase. The composite primary key (idKeep, Member_idMember) found, that is not supported. The first column is selected.
+    idkeep = models.BigAutoField(db_column='idKeep', primary_key=True)  # Field name made lowercase.
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
 
     class Meta:
         managed = False
         db_table = 'keep'
-        unique_together = (('idkeep', 'member_idmember'),)
 
 
 class Like(models.Model):
-    idlike = models.BigIntegerField(db_column='idLike', primary_key=True)  # Field name made lowercase. The composite primary key (idLike, Post_idPost) found, that is not supported. The first column is selected.
+    idlike = models.BigAutoField(db_column='idLike', primary_key=True)  # Field name made lowercase.
     count = models.BigIntegerField()
     week_count = models.BigIntegerField()
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
@@ -110,19 +109,16 @@ class Like(models.Model):
     class Meta:
         managed = False
         db_table = 'like'
-        unique_together = (('idlike', 'post_idpost'),)
-
 
 
 class Theme(models.Model):
-    idtheme = models.IntegerField(db_column='idTheme', primary_key=True)  # Field name made lowercase.
+    idtheme = models.BigAutoField(db_column='idTheme', primary_key=True)  # Field name made lowercase.
     state = models.CharField(max_length=45)
     tag = models.CharField(max_length=45)
 
     class Meta:
         managed = False
         db_table = 'theme'
-
 
 
 class Temp(models.Model):
@@ -135,10 +131,8 @@ class Temp(models.Model):
         unique_together = (('theme_idtheme', 'post_idpost'),)
 
 
-
-
 class Video(models.Model):
-    idvideo = models.BigIntegerField(db_column='idVideo', primary_key=True)  # Field name made lowercase.
+    idvideo = models.BigAutoField(db_column='idVideo', primary_key=True)  # Field name made lowercase.
     video_name = models.CharField(max_length=100)
     video_path = models.CharField(max_length=300)
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
