@@ -48,12 +48,14 @@ INSTALLED_APPS = [
 ]
 
 # user 앱에서 내가 설정한 User를 사용하겠다고 설정한다.
-#AUTH_USER_MODEL = 'myapp.User'
+AUTH_USER_MODEL = 'caki_app.Member'
 
 # jwt 토큰은 simplejwt의 JWTAuthentication으로 인증한다.
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication'
     )
 }
 
@@ -75,7 +77,7 @@ SIMPLE_JWT = {
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'id',
+    'USER_ID_FIELD': 'idMember',
     'USER_ID_CLAIM': 'user_id',
     'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
 

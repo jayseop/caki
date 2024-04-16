@@ -1,86 +1,127 @@
-from django.shortcuts import render, redirect
-from django.contrib import auth
 from django.contrib.auth import authenticate
-from django.contrib.auth import login
 from django.contrib.auth.models import User
+from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Member
-import datetime
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework.views import APIView
+from .serializers import *
+from mysite.settings import SECRET_KEY
 
-def main_page(request):
-    return render(request, 'main.html')
+# def main_page(request):
+#     return render(request, 'main.html')
 
 #회원가입
-def user_signup(request):
-    if request.method == 'POST': # 정보를 받아옴
-        nickname = request.POST['nickname']
-        password1 = request.POST['password1']
-        password2 = request.POST['password2']
-        email = request.POST['email']
-        #date = datetime.datetime.now().date()
-        #qual = 1 if request.POST.get('qual') else 0 # 전문성이 있으면 1 없으면 0
-        #introduce = request.POST['introduce']
+class SignupAPIView(APIView):
+    def post(self, request):
+        print(request.data)
+        serializer = UserSerializer(data=request.data)
 
-        # 비밀번호 확인
-        if password1 != password2:
-            return HttpResponse('Passwords do not match.')
-        
-        # 이메일 중복 확인.
-        if Member.objects.filter(email=email).exists():
-            return HttpResponse('Email is already registered. Please use another email address.')
-        
-        # 닉네임 중복 확인
-        if Member.objects.filter(nickname=nickname).exists():
-            return HttpResponse('Nickname is already taken. Please choose another one.')
-
-
-        # 회원 생성 및 데이터베이스에 저장
-        user = Member.objects.create(nickname=nickname, 
-                                    email=email, 
-                                    password=password1, 
-                                    #date = date, 
-                                    #qual = qual,
-                                    #introduce = introduce
-                                     )
-        user.save() 
-
-
-        return redirect('/') # 로그인 페이지
-    else:
-        # GET 요청일때
-        return render(request, 'signup.html') # 회원가입 페이지
-
-# 로그인
-def user_login(request):
-    if request.method == 'POST':
-        # POST 요청일 때 사용자가 입력한 데이터 처리
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
-        # 사용자를 데이터베이스에서 찾기
-        try:
-            user = Member.objects.get(email = email)
-
-        except Member.DoesNotExist:
-            # 사용자가 존재하지 않는 경우 에러 메시지 반환
-            return HttpResponse("User does not exist")
-
-        # 비밀번호 인증
-        if user.password == password:
-            # 비밀번호가 일치할 경우, 로그인 처리
-            #login(request, user) 
+        if serializer.is_valid():
+            user = serializer.save()
             
-            #return redirect('/')  # 로그인 성공 시 리다이렉트할 URL
-            return render(request, 'main.html')
-
-        else:
-            # 비밀번호가 일치하지 않을 경우, 에러 메시지 반환
-            return HttpResponse("Invalid password")
-
-    else:
-        # GET 요청일 때 로그인 폼 보여주기
-        return render(request, 'login.html')
+            # jwt 토큰 접근
+            token = TokenObtainPairSerializer.get_token(user)
+            refresh_token = str(token)
+            access_token = str(token.access_token)
+            res = Response(
+                {
+                    "user": serializer.data,
+                    "message": "signup successs",
+                    "token": {
+                        "access": access_token,
+                        "refresh": refresh_token,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+            
+            # jwt 토큰 => 쿠키에 저장
+            res.set_cookie("access", access_token, httponly=True)
+            res.set_cookie("refresh", refresh_token, httponly=True)
+            
+            return HttpResponse('signup successs') #회원가입 성공시 페이지
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-#게시글 포스팅
-def user_post(request):
-    pass
+    def get(self, request):
+        return render(request,'signup.html')
+
+
+class AuthUserAPIView(APIView):
+    # 유저 정보 확인
+    def get(self, request):
+        # try:
+        #     # access token을 decode 해서 유저 id 추출 => 유저 식별
+        #     access = request.COOKIES['access']
+        #     payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
+        #     pk = payload.get('user_id')
+        #     user = get_object_or_404(User, pk=pk)
+        #     serializer = UserSerializer(instance=user)
+        #     return HttpResponse(serializer.data, status=status.HTTP_200_OK)
+
+        # except(jwt.exceptions.ExpiredSignatureError):
+        #     # 토큰 만료 시 토큰 갱신
+        #     data = {'refresh': request.COOKIES.get('refresh', None)}
+        #     serializer = TokenRefreshSerializer(data=data)
+        #     if serializer.is_valid(raise_exception=True):
+        #         access = serializer.data.get('access', None)
+        #         refresh = serializer.data.get('refresh', None)
+        #         payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
+        #         pk = payload.get('user_id')
+        #         user = get_object_or_404(User, pk=pk)
+        #         serializer = UserSerializer(instance=user)
+        #         res = Response(serializer.data, status=status.HTTP_200_OK)
+        #         res.set_cookie('access', access)
+        #         res.set_cookie('refresh', refresh)
+        #         return HttpResponse(res)
+        #     raise jwt.exceptions.InvalidTokenError
+
+        # except(jwt.exceptions.InvalidTokenError):
+        #     # 사용 불가능한 토큰일 때
+        #     return Response(status=status.HTTP_400_BAD_REQUEST)
+ 
+        
+        return render(request,'login.html')
+
+    # 로그인
+    def post(self, request):
+    	# 유저 인증
+        user = authenticate(
+            email=request.data.get("email"), 
+            password=request.data.get("password")
+        )
+        # 이미 회원가입 된 유저일 때
+        if user is not None:
+            serializer = UserSerializer(user)
+            # jwt 토큰 접근
+            token = TokenObtainPairSerializer.get_token(user)
+            refresh_token = str(token)
+            access_token = str(token.access_token)
+            res = Response(
+                {
+                    "user": serializer.data,
+                    "message": "login success",
+                    "token": {
+                        "access": access_token,
+                        "refresh": refresh_token,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+            # jwt 토큰 => 쿠키에 저장
+            res.set_cookie("access", access_token, httponly=True)
+            res.set_cookie("refresh", refresh_token, httponly=True)
+            return HttpResponse('login successs')
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    # 로그아웃
+    def delete(self, request):
+        # 쿠키에 저장된 토큰 삭제
+        response = Response({
+            "message": "Logout success"
+            }, status=status.HTTP_202_ACCEPTED)
+        response.delete_cookie("access")
+        response.delete_cookie("refresh")
+        return HttpResponse(response)
