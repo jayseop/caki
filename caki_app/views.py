@@ -80,3 +80,7 @@ def user_login(request):
     else:
         # GET 요청일 때 로그인 폼 보여주기
         return render(request, 'login.html')
+    
+#게시글 포스팅
+def user_post(request):
+    pass
