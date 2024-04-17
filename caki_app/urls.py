@@ -11,5 +11,5 @@ urlpatterns = [
     path("signup/", SignupAPIView.as_view(), name='signup'), # post - 회원가입
     path('authuser/', AuthUserAPIView.as_view(), name='authuser'), # post - 로그인, delete - 로그아웃
     # path("authuser/refresh/", TokenRefreshView.as_view()), # jwt 토큰 재발급
-    # path("test/onlyuserview/",OnlyUserView.as_view(),name = 'onlyuserview')
+    # path("test/",UserView.as_view(),name = 'onlyuserview') # 테스트 뷰
 ]
