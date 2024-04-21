@@ -23,6 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-i5gsa=^rd@twz*a5ayhhw8n#bedu3-!4k7n@m=e16me(%5litb'
 
+MAIN_DOMAIN = 'http://127.0.0.1:8000'
+
+NAVER_CLIENT_ID = 'IeMtmKBefztC_rW0RGjW'
+NAVER_CLIENT_SECRET ='epYTcqupVJ'
+
+GOOGLE_CLIENT_ID = '794454942714-fj3sb5b9skv1o6a5ko845enhg5v4k8cp.apps.googleusercontent.com'
+GOOGEL_CLIENT_SECRET = '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'
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -38,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+
     
     # 생성한 앱
     'caki_app',
@@ -45,6 +56,15 @@ INSTALLED_APPS = [
     # 설치한 라이브러리
     'rest_framework',
     'rest_framework_simplejwt',
+
+    # # Social 로그인을 위한 app
+    # 'allauth',
+    # 'allauth.account',
+    # 'allauth.socialaccount',
+       
+    
+    # # Naver
+    # 'allauth.socialaccount.providers.naver',
 ]
 
 # caki_app 앱에서 내가 설정한 Member를 사용하겠다고 설정한다.
@@ -100,6 +120,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'mysite.urls'
