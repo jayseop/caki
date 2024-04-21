@@ -34,8 +34,8 @@ class Member(AbstractBaseUser):
     password = models.CharField(max_length=130)
     nickname = models.CharField(unique=True, max_length=45)
     date = models.DateTimeField(auto_now_add=True)
-    qual = models.CharField(max_length=4)
-    introduce = models.CharField(max_length=100, blank=True, null=True)
+    qual = models.CharField(max_length=4, blank=True, null=True)
+    introduce = models.CharField(max_length=255, blank=True, null=True)
     
     last_login = None
 
