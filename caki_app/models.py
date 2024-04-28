@@ -27,7 +27,6 @@ class UserManager(BaseUserManager):
 
 # AbstractBaseUser를 상속해서 유저 커스텀
 # Member 모델
-
 class Member(AbstractBaseUser):
     idmember = models.BigAutoField(db_column='idMember', primary_key=True)  # Field name made lowercase.
     email = models.CharField(unique=True, max_length=30)
