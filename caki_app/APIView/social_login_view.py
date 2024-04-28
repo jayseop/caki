@@ -4,7 +4,6 @@ from django.shortcuts import redirect
 
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 import requests
@@ -74,7 +73,7 @@ class NaverCallbackAPIView(APIView):
             # User 의 email 을 받아오지 못한 경우
             if email is None:
                 return JsonResponse({
-                    "error": "Can't Get Email Information from Naver"
+                    "error": "Can't Get Email Information"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             try:
@@ -152,7 +151,7 @@ class GoogleCallbackAPIView(APIView):
             # User 의 email 을 받아오지 못한 경우
             if email is None:
                 return JsonResponse({
-                    "error": "Can't Get Email Information from Naver"
+                    "error": "Can't Get Email Information"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             try:
