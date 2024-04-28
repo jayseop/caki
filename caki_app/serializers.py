@@ -1,4 +1,4 @@
-from .models import Member
+from .models import Member, Post
 from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
@@ -15,3 +15,15 @@ class UserSerializer(serializers.ModelSerializer):
             introduce = validated_data.get('introduce',None)
         )
         return user
+    
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Post
+        fields='__all__'
+    
+    def create(self, validated_data):
+        post=Post.objects.create_post(
+            title=validated_data['title'],
+            text=validated_data['text']
+        )
+        return post

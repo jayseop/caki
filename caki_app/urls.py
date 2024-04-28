@@ -1,6 +1,7 @@
 from django.urls import path
 from .APIView.user_api_views import *
 from .APIView.social_login_view import *
+from .APIView.user_post_views import *
 from rest_framework_simplejwt.views import TokenRefreshView
 
 app_name = 'caki_app'
@@ -18,4 +19,5 @@ urlpatterns = [
     path('authuser/google/login', GoogleLoginAPIView.as_view()),
     path('authuser/google/callback', GoogleCallbackAPIView.as_view()),
 
+    path('posting/',CreatePost.as_view(), name='posting')
 ]
