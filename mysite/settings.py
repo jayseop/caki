@@ -23,6 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-i5gsa=^rd@twz*a5ayhhw8n#bedu3-!4k7n@m=e16me(%5litb'
 
+MAIN_DOMAIN = 'http://127.0.0.1:8000'
+
+NAVER_CLIENT_ID = ''
+NAVER_CLIENT_SECRET =''
+
+GOOGLE_CLIENT_ID = ''
+GOOGEL_CLIENT_SECRET = ''
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -38,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+
     
     # 생성한 앱
     'caki_app',
@@ -100,6 +111,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'mysite.urls'

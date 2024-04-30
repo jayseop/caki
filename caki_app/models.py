@@ -27,15 +27,14 @@ class UserManager(BaseUserManager):
 
 # AbstractBaseUser를 상속해서 유저 커스텀
 # Member 모델
-
 class Member(AbstractBaseUser):
     idmember = models.BigAutoField(db_column='idMember', primary_key=True)  # Field name made lowercase.
     email = models.CharField(unique=True, max_length=30)
     password = models.CharField(max_length=130)
     nickname = models.CharField(unique=True, max_length=45)
     date = models.DateTimeField(auto_now_add=True)
-    qual = models.CharField(max_length=4)
-    introduce = models.CharField(max_length=100, blank=True, null=True)
+    qual = models.CharField(max_length=4, blank=True, null=True)
+    introduce = models.CharField(max_length=255, blank=True, null=True)
     
     last_login = None
 
@@ -48,7 +47,7 @@ class Member(AbstractBaseUser):
 class Post(models.Model):
     idpost = models.BigAutoField(db_column='idPost', primary_key=True)  # Field name made lowercase.
     title = models.CharField(max_length=300)
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
     view = models.CharField(max_length=45)
     text = models.CharField(max_length=8000)
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
@@ -102,10 +101,9 @@ class Keep(models.Model):
 
 class Like(models.Model):
     idlike = models.BigAutoField(db_column='idLike', primary_key=True)  # Field name made lowercase.
-    count = models.BigIntegerField()
-    week_count = models.BigIntegerField()
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
-
+    member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
+    
     class Meta:
         managed = False
         db_table = 'like'
