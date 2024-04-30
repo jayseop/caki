@@ -47,7 +47,7 @@ class Member(AbstractBaseUser):
 class Post(models.Model):
     idpost = models.BigAutoField(db_column='idPost', primary_key=True)  # Field name made lowercase.
     title = models.CharField(max_length=300)
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
     view = models.CharField(max_length=45)
     text = models.CharField(max_length=8000)
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
@@ -101,10 +101,9 @@ class Keep(models.Model):
 
 class Like(models.Model):
     idlike = models.BigAutoField(db_column='idLike', primary_key=True)  # Field name made lowercase.
-    count = models.BigIntegerField()
-    week_count = models.BigIntegerField()
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
-
+    member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
+    
     class Meta:
         managed = False
         db_table = 'like'

@@ -22,7 +22,7 @@ class UserView(APIView) :
             user = get_object_or_404(Member, pk=pk) # 데이터 베이스에서 유저 정보 추출
             serializer = UserSerializer(instance=user)
             res = JsonResponse({
-                    'user' : serializer.data,
+                    'user_info' : serializer.data,
                     'message': 'success',
                     },status=status.HTTP_200_OK)
             return res
@@ -78,7 +78,7 @@ class SignupAPIView(APIView):
             access_token = str(token.access_token)
             res = JsonResponse(
                 {
-                    "user": serializer.data,
+                    "user_info": serializer.data,
                     'message': 'success',
                 },
                 status=status.HTTP_200_OK,
@@ -113,7 +113,7 @@ class AuthUserAPIView(APIView):
             access_token = str(token.access_token)
             res = JsonResponse(
                 {
-                    "user": serializer.data,
+                    "user_info": serializer.data,
                     'message': 'success',
                 },
                 status=status.HTTP_200_OK,
