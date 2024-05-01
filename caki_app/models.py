@@ -9,8 +9,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from rest_framework import serializers
 
+
 class UserManager(BaseUserManager):
-    def create_user(self, email, password, nickname, qual, introduce,**kwargs):
+    def create_user(self, email, password, nickname,date, qual, introduce,**kwargs):
 
         if not email:
             raise ValueError('Users must have an email address')
@@ -18,6 +19,7 @@ class UserManager(BaseUserManager):
             email=email,
             nickname = nickname,
             qual = qual,
+            date = date,
             introduce = introduce 
         )
         user.set_password(password)
@@ -47,7 +49,7 @@ class Member(AbstractBaseUser):
 class Post(models.Model):
     idpost = models.BigAutoField(db_column='idPost', primary_key=True)  # Field name made lowercase.
     title = models.CharField(max_length=300)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField()
     view = models.CharField(max_length=45)
     text = models.CharField(max_length=8000)
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.

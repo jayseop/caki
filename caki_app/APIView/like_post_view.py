@@ -1,39 +1,82 @@
-from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404,redirect
-from rest_framework import status
+from django.shortcuts import get_object_or_404
+from django.forms.models import model_to_dict
 from django.http import JsonResponse
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from django.core.serializers import serialize
 from rest_framework.views import APIView
 
-from caki_app.models import Like,Member,Post
+from caki_app.models import Like,Keep,Member,Post
 from caki_app.serializers import *
-from caki_app.APIView.user_api_views import UserView
-from mysite.settings import SECRET_KEY,MAIN_DOMAIN
-import jwt
-import requests
-
-
+from caki_app.APIView.get_post_others import get_post_theme
 
 class LikePost(APIView):
+
     def get(self,request,idpost,idmember):
         like_exists = Like.objects.filter(post_idpost = idpost,member_idmember = idmember).exists()
-        if like_exists:
-            return True # 좋아요 누른 게시물
-        else :
-            return False
+        like_cnt = Like.objects.filter(post_idpost = idpost).count()
+        res = JsonResponse({
+            "like_cnt" : like_cnt,
+            "like_exists": True if like_exists else False
+        })
+        return res
     
     def post (self,request,idpost,idmember):
         member_instance = get_object_or_404(Member,pk= idmember)
         post_instance = get_object_or_404(Post,pk= idpost)
-        res = Like.objects.create(
+        Like.objects.create(
             member_idmember = member_instance,
             post_idpost = post_instance
         )
-        return JsonResponse({"message" : res})
+        return JsonResponse({"message" : 'success'})
     
     def delete (self,request,idpost,idmember):
-        res = Like.objects.filter(
+        Like.objects.filter(
             post_idpost=idpost, 
-            member_idmember=idmember).delete()
-        return JsonResponse({"message" : res})
+            member_idmember=idmember
+            ).delete()
+        return JsonResponse({"message" : 'success'})
 
+
+class KeepPost(APIView):
+    def get(self,request,idpost,idmember):
+        keep_instances = Keep.objects.filter(member_idmember=idmember).distinct()
+        post_list = []
+
+        for keep_instance in keep_instances:
+            post_instance = keep_instance.post_idpost
+
+            post_body = model_to_dict(post_instance)
+            post_theme = get_post_theme(post_instance)
+
+            pull_posts = {
+                    "post_body" : post_body,
+                    "post_theme" : post_theme,
+                }
+            post_list.append(pull_posts)
+
+        res = JsonResponse({
+            "post_list" : post_list,
+            "message" : 'success'
+            })
+
+        return res
+    
+    def post (self,request,idpost,idmember):
+        member_instance = get_object_or_404(Member,pk= idmember)
+        post_instance = get_object_or_404(Post,pk= idpost)
+        keep = Keep.objects.create(
+            member_idmember = member_instance,
+            post_idpost = post_instance
+        )
+        res = JsonResponse({
+            "keep" : model_to_dict(keep),
+            "message" : 'success'})
+        return res
+    
+    def delete (self,request,idpost,idmember):
+        Keep.objects.filter(
+            post_idpost=idpost, 
+            member_idmember=idmember
+            ).delete()
+        
+        res = JsonResponse({"message" : 'success'})
+        return res
