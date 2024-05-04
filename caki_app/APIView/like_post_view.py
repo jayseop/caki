@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from caki_app.models import Like,Keep,Member,Post
 from caki_app.serializers import *
-from caki_app.APIView.get_post_others import get_post_theme
+from caki_app.APIView.get_post_others import get_post_theme,get_post_writer
 
 class LikePost(APIView):
 
@@ -38,18 +38,16 @@ class LikePost(APIView):
 
 class KeepPost(APIView):
     def get(self,request,idpost,idmember):
-        keep_instances = Keep.objects.filter(member_idmember=idmember).distinct()
+        keep_instances = Keep.objects.filter(member_idmember=idmember).order_by('-idkeep').distinct()
         post_list = []
 
         for keep_instance in keep_instances:
             post_instance = keep_instance.post_idpost
 
-            post_body = model_to_dict(post_instance)
-            post_theme = get_post_theme(post_instance)
-
             pull_posts = {
-                    "post_body" : post_body,
-                    "post_theme" : post_theme,
+                    "post_writer" : get_post_writer(post_instance),
+                    "post_body" : model_to_dict(post_instance),
+                    "post_theme" : get_post_theme(post_instance),
                 }
             post_list.append(pull_posts)
 
