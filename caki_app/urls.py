@@ -3,6 +3,7 @@ from .APIView.user_api_views import *
 from .APIView.social_login_view import *
 from .APIView.create_post_view import *
 from .APIView.like_post_view import *
+from .APIView.change_myinfo_view import *
 
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -28,4 +29,6 @@ urlpatterns = [
     # 게시글 좋아요
     path('like/<int:idpost>/<int:idmember>/',LikePost.as_view(),name = 'likepost'),
 
+    # 마이페이지
+    path('myinfo/', ChangeInfo.as_view(), name='info')
 ]

@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     # 설치한 라이브러리
     'rest_framework',
     'rest_framework_simplejwt',
-    'jwt'
 ]
 
 # caki_app 앱에서 내가 설정한 Member를 사용하겠다고 설정한다.
