@@ -1,9 +1,9 @@
 from django.urls import path
 from .APIView.user_api_views import *
 from .APIView.social_login_view import *
-from .APIView.create_post_view import *
-from .APIView.like_post_view import *
-from.APIView.search_post_view import *
+from .APIView.post_view import *
+from .APIView.keep_post_view import *
+from.APIView.search_view import *
 
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -24,12 +24,20 @@ urlpatterns = [
     path('authuser/google/login', GoogleLoginAPIView.as_view()),
     path('authuser/google/callback', GoogleCallbackAPIView.as_view()),
 
+    # 게시글 보기
+    path('postview/<int:idpost>/',PostView.as_view(),name='postview'),
     # 게시글 생성
-    path('createpost/<str:nickname>/',CreatePost.as_view(),name = 'createpost'),
+    path('createpost/',CreatePost.as_view(),name = 'createpost'),
+    # 저장된 게시글 - get, 저장 - post, 삭제 - delete
+    path('keeppost/',KeepPost.as_view(),name = 'keeppost'),
+    #게시글 삭제 get - 삭제
+    path('deletepost/<int:idpost>/',DeletePost.as_view(), name='deletepsot'),
+    # 게시글 수정 post - 수정
+    path('editpost/<int:idpost>/',EditPost.as_view(),name='editpsot'),
+    # 게시글 저장 - get, 삭제 -delete
+    path('addkeep/<int:idpost>/<int:idmember>/',AddKeep.as_view(),name='addkeep'),
     # 게시글 좋아요 확인 - get, 좋아요 - post, 삭제 - delete
     path('like/<int:idpost>/<int:idmember>/',LikePost.as_view(),name = 'likepost'),
-    # 저장된 게시글 - get, 저장 - post, 삭제 - delete
-    path('keep/<int:idpost>/<int:idmember>/',KeepPost.as_view(),name = 'keeppost'),
     # 게시글 검색
-    path('search/',SearchPost.as_view(), name = 'searchpost'),
+    path('search/',Search.as_view(), name = 'searchpost'),
 ]

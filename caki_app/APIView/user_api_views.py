@@ -41,7 +41,7 @@ class UserView(APIView) :
 
                 serializer = UserSerializer(instance=user)
                 res = JsonResponse({
-                    'user' : serializer.data,
+                    'user_info' : serializer.data,
                     'message': 'success',
                     },status=status.HTTP_200_OK)
                 
@@ -52,7 +52,7 @@ class UserView(APIView) :
 
         # refrash 토큰 만료 및 로그아웃 유저
         except(jwt.exceptions.InvalidTokenError):
-            return JsonResponse({"message": "none",}) # 로그인 페이지
+            return JsonResponse({"message": "none"}) # 로그인 페이지
 
 
 # 회원가입 test용
@@ -87,7 +87,8 @@ class SignupAPIView(APIView):
             res.set_cookie("access", access_token, httponly=True)
             res.set_cookie("refresh", refresh_token, httponly=True)
             return res #회원가입 성공시 페이지
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 

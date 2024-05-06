@@ -12,7 +12,6 @@ class UserSerializer(serializers.ModelSerializer):
             email = validated_data['email'],
             password = validated_data['password'],
             nickname = validated_data['nickname'],
-            date = datetime.datetime.now(),
             qual = validated_data.get('qual',None),
             introduce = validated_data.get('introduce',None)
         )

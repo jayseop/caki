@@ -10,7 +10,7 @@ from caki_app.APIView.get_post_others import *
 import re
 
 
-class SearchPost(APIView):
+class Search(APIView):
     def split_text(self,search_text):
         kor = re.compile("[가-힣]+").findall(search_text) 
         eng = re.compile("[a-zA-Z]+").findall(search_text)
@@ -53,6 +53,7 @@ class SearchPost(APIView):
 
         res = JsonResponse({
             "search": search_terms,
+            "keywords" : keywords,
             "post_list":post_list,
         })
         return res
