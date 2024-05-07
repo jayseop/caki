@@ -4,6 +4,7 @@ from .APIView.social_login_view import *
 from .APIView.create_post_view import *
 from .APIView.like_post_view import *
 from.APIView.search_post_view import *
+from .APIView.change_myinfo_view import *
 
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -32,4 +33,7 @@ urlpatterns = [
     path('keep/<int:idpost>/<int:idmember>/',KeepPost.as_view(),name = 'keeppost'),
     # 게시글 검색
     path('search/',SearchPost.as_view(), name = 'searchpost'),
+
+    # 마이페이지
+    path('myinfo/', ChangeInfo.as_view(), name='info'),
 ]
