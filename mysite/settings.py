@@ -26,7 +26,7 @@ json_file_path = os.path.expanduser("~/Desktop/secrets.json")
 with open(json_file_path) as f:
     secrets = json.load(f)
 
-MAIN_DOMAIN = 'http://127.0.0.1:8000'
+MAIN_DOMAIN = 'http://13.124.205.29'
 
 SECRET_KEY = secrets['SECRET_KEY']
 NAVER_CLIENT_ID = secrets['NAVER_CLIENT_ID']
