@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 from pathlib import Path
-import os
 from datetime import timedelta
+import os
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,16 +22,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-i5gsa=^rd@twz*a5ayhhw8n#bedu3-!4k7n@m=e16me(%5litb'
+json_file_path = os.path.expanduser("~/Desktop/secrets.json")
+with open(json_file_path) as f:
+    secrets = json.load(f)
 
 MAIN_DOMAIN = 'http://127.0.0.1:8000'
 
-NAVER_CLIENT_ID = ''
-NAVER_CLIENT_SECRET =''
+SECRET_KEY = secrets['SECRET_KEY']
+NAVER_CLIENT_ID = secrets['NAVER_CLIENT_ID']
+NAVER_CLIENT_SECRET =secrets['NAVER_CLIENT_SECRET']
 
-GOOGLE_CLIENT_ID = ''
-GOOGEL_CLIENT_SECRET = ''
+GOOGLE_CLIENT_ID = secrets['GOOGLE_CLIENT_ID']
+GOOGEL_CLIENT_SECRET = secrets['GOOGEL_CLIENT_SECRET']
 
+ALLOWED_HOSTS = ['*']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

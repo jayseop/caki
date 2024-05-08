@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`member` (
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
   UNIQUE INDEX `nickname_UNIQUE` (`nickname` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 14
+AUTO_INCREMENT = 15
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`post` (
     FOREIGN KEY (`Member_idMember`)
     REFERENCES `bartender`.`member` (`idMember`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 5
+AUTO_INCREMENT = 9
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -120,6 +120,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`keep` (
   `idKeep` BIGINT NOT NULL AUTO_INCREMENT,
   `Member_idMember` BIGINT NOT NULL,
   `Post_idPost` BIGINT NOT NULL,
+  `date` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`idKeep`),
   INDEX `fk_Keep_Member` (`Member_idMember` ASC) VISIBLE,
   INDEX `fk_Keep_Post` (`Post_idPost` ASC) VISIBLE,
@@ -130,6 +131,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`keep` (
     FOREIGN KEY (`Post_idPost`)
     REFERENCES `bartender`.`post` (`idPost`))
 ENGINE = InnoDB
+AUTO_INCREMENT = 4
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -140,7 +142,9 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `bartender`.`like` (
   `idLike` BIGINT NOT NULL AUTO_INCREMENT,
   `Post_idPost` BIGINT NOT NULL,
-  `Member_idMember` BIGINT NOT NULL,
+  `Member_idMember` BIGINT NULL DEFAULT NULL,
+  `date` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `weather` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`idLike`),
   INDEX `fk_Like_Post` (`Post_idPost` ASC) VISIBLE,
   INDEX `Member_idMember` (`Member_idMember` ASC) VISIBLE,
@@ -151,6 +155,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`like` (
     FOREIGN KEY (`Member_idMember`)
     REFERENCES `bartender`.`member` (`idMember`))
 ENGINE = InnoDB
+AUTO_INCREMENT = 9
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -164,6 +169,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`theme` (
   `tag` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idTheme`))
 ENGINE = InnoDB
+AUTO_INCREMENT = 14
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 

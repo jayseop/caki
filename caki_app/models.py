@@ -7,11 +7,10 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from rest_framework import serializers
-
+from django.utils import timezone
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password, nickname,date, qual, introduce,**kwargs):
+    def create_user(self, email, password, nickname, qual, introduce,**kwargs):
 
         if not email:
             raise ValueError('Users must have an email address')
@@ -19,7 +18,6 @@ class UserManager(BaseUserManager):
             email=email,
             nickname = nickname,
             qual = qual,
-            date = date,
             introduce = introduce 
         )
         user.set_password(password)
@@ -29,12 +27,14 @@ class UserManager(BaseUserManager):
 
 # AbstractBaseUser를 상속해서 유저 커스텀
 # Member 모델
+local_time = timezone.localtime(timezone.now())
+
 class Member(AbstractBaseUser):
     idmember = models.BigAutoField(db_column='idMember', primary_key=True)  # Field name made lowercase.
     email = models.CharField(unique=True, max_length=30)
     password = models.CharField(max_length=130)
     nickname = models.CharField(unique=True, max_length=45)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=local_time)
     qual = models.CharField(max_length=4, blank=True, null=True)
     introduce = models.CharField(max_length=255, blank=True, null=True)
     
@@ -49,7 +49,7 @@ class Member(AbstractBaseUser):
 class Post(models.Model):
     idpost = models.BigAutoField(db_column='idPost', primary_key=True)  # Field name made lowercase.
     title = models.CharField(max_length=300)
-    date = models.DateTimeField()
+    date = models.DateTimeField(default=local_time)
     view = models.CharField(max_length=45)
     text = models.CharField(max_length=8000)
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
@@ -95,7 +95,7 @@ class Keep(models.Model):
     idkeep = models.BigAutoField(db_column='idKeep', primary_key=True)  # Field name made lowercase.
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
-
+    date = models.DateTimeField(default=local_time)
     class Meta:
         managed = False
         db_table = 'keep'
@@ -105,7 +105,8 @@ class Like(models.Model):
     idlike = models.BigAutoField(db_column='idLike', primary_key=True)  # Field name made lowercase.
     post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
-    
+    date = models.DateTimeField(default=local_time)
+    weather = models.TextField(blank=True, null=True)
     class Meta:
         managed = False
         db_table = 'like'
