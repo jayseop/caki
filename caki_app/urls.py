@@ -3,9 +3,9 @@ from .APIView.user_api_views import *
 from .APIView.social_login_view import *
 from .APIView.post_view import *
 from .APIView.keep_post_view import *
-from.APIView.search_view import *
+from .APIView.search_view import *
 from .APIView.main_view import *
-
+from .APIView.change_myinfo_view import * 
 from rest_framework_simplejwt.views import TokenRefreshView
 
 app_name = 'caki_app'
@@ -18,7 +18,7 @@ urlpatterns = [
 
     # 유저 인증
     path("authuser/userview/",UserView.as_view(),name = 'userview'),
-    
+     
     #소셜 로그인
     path('authuser/naver/login/', NaverLoginAPIView.as_view()),
     path('authuser/naver/callback', NaverCallbackAPIView.as_view()),
