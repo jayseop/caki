@@ -5,10 +5,9 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from caki_app.models import  *
-from caki_app.APIView.get_post_others import *
+from caki_app.APIView.get_others import *
 from mysite.settings import MAIN_DOMAIN
 import requests
-import datetime
 
 
 
@@ -31,22 +30,26 @@ import datetime
 class PostView(APIView):
     def get(self,request,idpost):
         cookies = request.COOKIES
-        user_info = requests.get (
+        response = requests.get (
                 f"{MAIN_DOMAIN}/authuser/userview/"
                 ,cookies=cookies # 쿠키도 함께 전달
             ).json()
         
         #인증 실패
-        if user_info['message'] != "success":
+        if response['message'] != "success":
             return JsonResponse({ #로그인 뷰
                 "message": "logout",
             }, status=status.HTTP_404_NOT_FOUND)
         
+        user_info = response['user_info']
+        idmember = user_info['idmember']
+
         post_instance = get_object_or_404(Post,pk = idpost)
-        print(user_info)
-        idmember = user_info['user_info']['idmember']
         res = JsonResponse({
-            "user_info" : user_info,
+            "user_info" : {
+                'idmember' : user_info['idmember'],
+                'nickname' : user_info['nickname'],
+            },
             "post_writer" : get_post_writer(post_instance),
             "post_body" : model_to_dict(post_instance),
             "post_theme" : get_post_theme(post_instance),
@@ -60,18 +63,22 @@ class PostView(APIView):
 class CreatePost (APIView):
     def get(self,request):
         cookies = request.COOKIES
-        user_info = requests.get (
+        response = requests.get (
                 f"{MAIN_DOMAIN}/authuser/userview/"
                 ,cookies=cookies # 쿠키도 함께 전달
             ).json()
         #인증 실패
-        if user_info['message'] != "success":
+        if response['message'] != "success":
             return JsonResponse({ #로그인 뷰
                 "message": "logout",
             }, status=status.HTTP_404_NOT_FOUND)
-                
+        user_info = response['user_info'] 
+
         res = {
-            "user_info" : user_info
+            "user_info" :{
+                'idmember' : user_info['idmember'],
+                'nickname' : user_info['nickname'],
+            }
         }
         return JsonResponse(res) # 게시글 작성 화면
         
@@ -127,7 +134,7 @@ class CreatePost (APIView):
 # 마이 페이지에서 유저 인증을 하였으니 
 # 따로 유저 인증은 필요 없어보임
 class DeletePost(APIView):
-    def get(self,request,idpost):
+    def delete(self,request,idpost):
         try:
             Keep.objects.filter(post_idpost = idpost).delete()
             Like.objects.filter(post_idpost = idpost).delete()
@@ -142,22 +149,28 @@ class DeletePost(APIView):
         except:
             return JsonResponse({'message' : 'empty idpost'})
 
+
 class EditPost(APIView):
     def get(self,request,idpost):
         cookies = request.COOKIES
-        user_info = requests.get (
+        response = requests.get (
                 f"{MAIN_DOMAIN}/authuser/userview/"
                 ,cookies=cookies # 쿠키도 함께 전달
             ).json()
         #인증 실패
-        if user_info['message'] != "success":
+        if response['message'] != "success":
             return JsonResponse({ #로그인 뷰
                 "message": "logout",
             }, status=status.HTTP_404_NOT_FOUND)
         
+        user_info = response['user_info']
+        
         post_instance = get_object_or_404(Post,pk = idpost)
         res = JsonResponse({
-            "user_info" : user_info,
+            "user_info" : {
+                'idmember' : user_info['idmember'],
+                'nickname' : user_info['nickname'],
+            },
             "post_body" : model_to_dict(post_instance),
             "post_theme" : get_post_theme(post_instance),             
             "message" : "success",
@@ -170,10 +183,11 @@ class EditPost(APIView):
     def edit_post(self,post_body,idpost):
         post_instance = get_object_or_404(Post,pk = idpost)
 
-        
+
         post_instance.title = post_body['title']
         post_instance.view = post_body['view']
         post_instance.text = post_body['text']
+
         post_instance.date = timezone.localtime(timezone.now())
         post_instance.save()
         # 생성된 게시글의 기본키
@@ -192,14 +206,14 @@ class EditPost(APIView):
         return temp_instance
         
 
-    def post(self,request,idpost):
+    def put(self,request,idpost):
         cookies = request.COOKIES
-        user_info = requests.get (
+        response = requests.get (
                 f"{MAIN_DOMAIN}/authuser/userview/"
                 ,cookies=cookies # 쿠키도 함께 전달
             ).json()
         #인증 실패
-        if user_info['message'] != "success":
+        if response['message'] != "success":
             return JsonResponse({ #로그인 뷰
                 "message": "logout",
             }, status=status.HTTP_404_NOT_FOUND)

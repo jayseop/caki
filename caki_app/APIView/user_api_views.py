@@ -88,7 +88,8 @@ class SignupAPIView(APIView):
             res.set_cookie("refresh", refresh_token, httponly=True)
             return res #회원가입 성공시 페이지
 
-        # return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse(serializer.errors, 
+                            status=status.HTTP_400_BAD_REQUEST)
     
 
 
