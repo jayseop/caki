@@ -46,4 +46,7 @@ urlpatterns = [
     path('searchview/',SearchView.as_view(),name="searchview"),
     # 검색
     path('search/',Search.as_view(), name = 'searchpost'),
+
+    # 마이페이지
+    path('myinfo/', ChangeInfo.as_view(), name='info'),
 ]
