@@ -18,7 +18,7 @@ urlpatterns = [
 
     # 유저 인증
     path("authuser/userview/",UserView.as_view(),name = 'userview'),
-    
+     
     #소셜 로그인
     path('authuser/naver/login/', NaverLoginAPIView.as_view()),
     path('authuser/naver/callback', NaverCallbackAPIView.as_view()),

@@ -14,7 +14,6 @@ import re
 class SearchView(APIView):
     def get(self,request):
         title_list = list(Post.objects.values_list('title', flat=True))
-        print(Post.objects.values_list('title', flat=True))
         res = JsonResponse({
             "title_list" : title_list,
         })
