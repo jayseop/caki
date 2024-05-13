@@ -26,7 +26,7 @@ json_file_path = os.path.expanduser("~/Desktop/secrets.json")
 with open(json_file_path) as f:
     secrets = json.load(f)
 
-MAIN_DOMAIN = 'http://13.124.205.29'
+MAIN_DOMAIN = secrets["MAIN_DOMAIN"]
 
 SECRET_KEY = secrets['SECRET_KEY']
 NAVER_CLIENT_ID = secrets['NAVER_CLIENT_ID']
@@ -149,7 +149,7 @@ DATABASES = {
         'NAME': 'bartender',
         'USER': 'root',
         'PASSWORD': 'root',
-        'HOST': '127.0.0.1',
+        'HOST': secrets["DB_HOST"],
         'PORT': '3306',
     }
 }
