@@ -30,17 +30,16 @@ MAIN_DOMAIN = secrets["MAIN_DOMAIN"]
 
 SECRET_KEY = secrets['SECRET_KEY']
 NAVER_CLIENT_ID = secrets['NAVER_CLIENT_ID']
-NAVER_CLIENT_SECRET =secrets['NAVER_CLIENT_SECRET']
+NAVER_CLIENT_SECRET = secrets['NAVER_CLIENT_SECRET']
 
 GOOGLE_CLIENT_ID = secrets['GOOGLE_CLIENT_ID']
 GOOGEL_CLIENT_SECRET = secrets['GOOGEL_CLIENT_SECRET']
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1','locallhost','13.124.205.29']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
 
 # Application definition

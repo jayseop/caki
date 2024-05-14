@@ -59,10 +59,10 @@ class Search(APIView):
 
 
     def get(self,request):
-        cookies = request.COOKIES
+        access_token = request.headers.get('Authorization').split(' ')[1]
         response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/"
-                ,cookies=cookies # 쿠키도 함께 전달
+                f"{MAIN_DOMAIN}/authuser/userview/",
+                headers={"Authorization": f"Bearer {access_token}"},
             ).json()
         # 인증 실패
         if response['message'] != 'success':

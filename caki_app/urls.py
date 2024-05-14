@@ -18,6 +18,8 @@ urlpatterns = [
 
     # 유저 인증
     path("authuser/userview/",UserView.as_view(),name = 'userview'),
+    # access token 재발급
+    path("token/refresh/",TokenRefreshView.as_view(), name='token_refresh'),
      
     #소셜 로그인
     path('authuser/naver/login/', NaverLoginAPIView.as_view()),

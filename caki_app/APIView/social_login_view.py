@@ -123,7 +123,7 @@ class GoogleCallbackAPIView(APIView):
             client_secret = GOOGEL_CLIENT_SECRET
             code = request.GET.get('code')
             grant_type = 'authorization_code'
-            uri = main_domain + "/authuser/google/callback"
+            uri = main_domain + "/authuser/google/callback/"
             state = 'google_login'
 
             parameters = f"client_id={client_id}&client_secret={client_secret}&code={code}&grant_type={grant_type}&redirect_uri={uri}&state={state}"

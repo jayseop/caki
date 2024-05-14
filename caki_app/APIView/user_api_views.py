@@ -16,7 +16,7 @@ class UserView(APIView) :
   def get(self,request): 
         try:
             # access token을 decode 해서 유저 id 추출 => 유저 식별
-            access_token = request.COOKIES.get('access',None)
+            access_token = request.headers.get('Authorization',None).split(' ')[1]
             payload = jwt.decode(access_token, SECRET_KEY, algorithms=['HS256']) # access 토큰으로 유저 확인
             pk = payload.get('user_id') # pk = idMember
             user = get_object_or_404(Member, pk=pk) # 데이터 베이스에서 유저 정보 추출
@@ -29,28 +29,28 @@ class UserView(APIView) :
         
         # access 토큰 만료 시 토큰 갱신
         except(jwt.exceptions.ExpiredSignatureError):
-            data = {'refresh': request.COOKIES.get('refresh', None)} # refrash 토큰 추출
-            serializer = TokenRefreshSerializer(data=data) # refrash 토큰으로 access토큰 발급
-            if serializer.is_valid(raise_exception=True): 
-                access_token = serializer.validated_data.get('access', None) # access 토큰 추출
-                # refresh_token = serializer.validated_data.get('refresh', None) # refrash 토큰 재발급
+            # data = {'refresh':  request.cookies.get('refresh',None)} # refrash 토큰 추출
+            # serializer = TokenRefreshSerializer(data=data) # refrash 토큰으로 access토큰 발급
+            # if serializer.is_valid(raise_exception=True): 
+            #     access_token = serializer.validated_data.get('access', None) # access 토큰 추출
+            #     # refresh_token = serializer.validated_data.get('refresh', None) # refrash 토큰 재발급
 
-                payload = jwt.decode(access_token, SECRET_KEY, algorithms=['HS256']) # access 토큰으로 유저 확인
-                pk = payload.get('user_id') # pk = idMember
-                user = get_object_or_404(Member, pk=pk) # 데이터 베이스에서 유저 정보 추출
+            #     payload = jwt.decode(access_token, SECRET_KEY, algorithms=['HS256']) # access 토큰으로 유저 확인
+            #     pk = payload.get('user_id') # pk = idMember
+            #     user = get_object_or_404(Member, pk=pk) # 데이터 베이스에서 유저 정보 추출
 
-                serializer = UserSerializer(instance=user)
-                res = JsonResponse({
-                    'user_info' : serializer.data,
-                    'message': 'success',
-                    },status=status.HTTP_200_OK)
+            #     serializer = UserSerializer(instance=user)
+            #     res = JsonResponse({
+            #         'user_info' : serializer.data,
+            #         'message': 'success',
+            #         },status=status.HTTP_200_OK)
                 
-                res.set_cookie('access', access_token) 
+            #     res.set_cookie('access', access_token) 
                 # res.set_cookie('refresh', refresh_token)
-                return res
-            raise jwt.exceptions.InvalidTokenError
+                return JsonResponse({"message" : "token_not_valid"})
+            # raise jwt.exceptions.InvalidTokenError
 
-        # refrash 토큰 만료 및 로그아웃 유저
+        # 로그아웃 유저
         except(jwt.exceptions.InvalidTokenError):
             return JsonResponse({"message": "none"}) # 로그인 페이지
 
@@ -96,7 +96,7 @@ class SignupAPIView(APIView):
 # 로그인
 class AuthUserAPIView(APIView):
     def get(self, request):        
-        return JsonResponse('login_page') #로그인 페이지
+        return JsonResponse({'message' : "login page"}) #로그인 페이지
 
     # 토큰 발급
     def post(self, request):
@@ -116,6 +116,8 @@ class AuthUserAPIView(APIView):
             res = JsonResponse(
                 {
                     "user_info": serializer.data,
+                    "access_token" : access_token,
+                    "refresh_token" : refresh_token,
                     'message': 'success',
                 },
                 status=status.HTTP_200_OK,

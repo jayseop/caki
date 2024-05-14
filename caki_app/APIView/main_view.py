@@ -85,9 +85,10 @@ class Main(APIView):
         return post_by_weather
 
     def get(self,request):
+        access_token = request.headers.get('Authorization').split(' ')[1]
         response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/"
-                ,cookies = request.COOKIES# 쿠키도 함께 전달
+                f"{MAIN_DOMAIN}/authuser/userview/",
+                headers={"Authorization": f"Bearer {access_token}"},
             ).json()
         # 인증 실패
         if response['message'] != 'success':
