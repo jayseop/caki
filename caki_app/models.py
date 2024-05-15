@@ -29,6 +29,8 @@ class UserManager(BaseUserManager):
 # Member 모델
 local_time = timezone.localtime(timezone.now())
 
+
+
 class Member(AbstractBaseUser):
     idmember = models.BigAutoField(db_column='idMember', primary_key=True)  # Field name made lowercase.
     email = models.CharField(unique=True, max_length=30)
@@ -37,7 +39,7 @@ class Member(AbstractBaseUser):
     date = models.DateTimeField(default=local_time)
     qual = models.CharField(max_length=4, blank=True, null=True)
     introduce = models.CharField(max_length=255, blank=True, null=True)
-    
+
     last_login = None
 
     USERNAME_FIELD = 'email'
@@ -46,11 +48,23 @@ class Member(AbstractBaseUser):
         db_table = 'Member'
 
 
+class MemberImage(models.Model):
+    member_idmember = models.OneToOneField(Member, models.DO_NOTHING, db_column='Member_idMember', primary_key=True)  # Field name made lowercase.
+    image_path = models.ImageField(upload_to='profile/', blank=True,  null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'member_image'
+
+
+def post_view_path(post,member):
+    return f'{member.nickname}/{post.title}/view'
+
 class Post(models.Model):
     idpost = models.BigAutoField(db_column='idPost', primary_key=True)  # Field name made lowercase.
     title = models.CharField(max_length=300)
     date = models.DateTimeField(default=local_time)
-    view = models.CharField(max_length=45)
+    view = models.ImageField(upload_to=post_view_path, blank=True, null=True)
     text = models.CharField(max_length=8000)
     member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
 

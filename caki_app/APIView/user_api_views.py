@@ -4,9 +4,11 @@ from rest_framework import status
 from django.http import JsonResponse
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework.views import APIView
-from caki_app.models import Member
+from caki_app.models import *
 from caki_app.serializers import *
+from caki_app.APIView.get_others import *
 from mysite.settings import SECRET_KEY
+from pathlib import Path
 import jwt
 
 
@@ -67,22 +69,28 @@ class UserView(APIView) :
 #회원가입
 class SignupAPIView(APIView):
     def get(self, request):
-        return JsonResponse('signup_page') # 회원가입 페이지
+        return JsonResponse({"message":'signup_page'}) # 회원가입 페이지
     
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
+
+            
             user = serializer.save() 
             token = TokenObtainPairSerializer.get_token(user)
             refresh_token = str(token)
             access_token = str(token.access_token)
-            res = JsonResponse(
-                {
+
+            res = JsonResponse({
                     "user_info": serializer.data,
+                    "access_token" : access_token,
+                    "refresh_token" : refresh_token,
                     'message': 'success',
                 },
                 status=status.HTTP_200_OK,
             )
+
+
             # jwt 토큰 => 쿠키에 저장
             res.set_cookie("access", access_token, httponly=True)
             res.set_cookie("refresh", refresh_token, httponly=True)
@@ -96,7 +104,7 @@ class SignupAPIView(APIView):
 # 로그인
 class AuthUserAPIView(APIView):
     def get(self, request):        
-        return JsonResponse({'message' : "login page"}) #로그인 페이지
+        return JsonResponse({'message' : "login_page"}) #로그인 페이지
 
     # 토큰 발급
     def post(self, request):
@@ -113,9 +121,13 @@ class AuthUserAPIView(APIView):
             token = TokenObtainPairSerializer.get_token(user)
             refresh_token = str(token)
             access_token = str(token.access_token)
+
+            idmember = serializer.data['idmember']
+
             res = JsonResponse(
                 {
                     "user_info": serializer.data,
+                    "image_url" : get_member_image(idmember=idmember),
                     "access_token" : access_token,
                     "refresh_token" : refresh_token,
                     'message': 'success',

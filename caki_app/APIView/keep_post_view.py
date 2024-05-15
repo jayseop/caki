@@ -32,7 +32,7 @@ class KeepPost(APIView):
                 # "post_body" : model_to_dict(post_instance),
                 # "post_theme" : get_post_theme(post_instance),
                 # "post_like" : get_post_like(post_instance,idmember)
-                "idpost" : post_instance.idpost,
+                "post_id" : post_instance.idpost,
                 "post_view" : None,
                 "post_title" : post_instance.title,
                 "post_like" : get_post_like(post_instance,idmember),
@@ -66,16 +66,23 @@ class LikePost(APIView):
             post_idpost = post_instance,
             weather = get_weather(nx,ny)
         )
-        return JsonResponse({
-            "add_like" : model_to_dict(like_instance),
-            "message" : 'success'})
+        res = JsonResponse({
+            "like_info" : get_post_like(idpost,idmember),
+            "message" : 'success'
+            })
+        return res
     
     def delete (self,request,idpost,idmember):
         Like.objects.filter(
             post_idpost=idpost, 
             member_idmember=idmember
             ).delete()
-        return JsonResponse({"message" : 'success'})
+        
+        res = JsonResponse({
+            "like_info" : get_post_like(idpost,idmember),
+            "message" : 'success'
+            })
+        return res
 
 
 
@@ -88,7 +95,7 @@ class AddKeep(APIView):
             post_idpost = post_instance
         )
         res = JsonResponse({
-            "add_keep" : model_to_dict(keep),
+            "keep_info" : get_post_keep(idpost,idmember),
             "message" : 'success'
             })
         return res
@@ -100,5 +107,8 @@ class AddKeep(APIView):
             member_idmember=idmember
             ).delete()
         
-        res = JsonResponse({"message" : 'success'})
+        res = JsonResponse({
+            "keep_info" : get_post_keep(idpost,idmember),
+            "message" : 'success'
+            })
         return res

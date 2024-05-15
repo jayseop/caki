@@ -46,14 +46,16 @@ class PostView(APIView):
 
         post_instance = get_object_or_404(Post,pk = idpost)
         res = JsonResponse({
-            "user_info" : {
-                'idmember' : user_info['idmember'],
-                'nickname' : user_info['nickname'],
+            "user_id" : idmember,
+            "post_writer_info" : {
+                "writer" : get_post_writer(post_instance),
+                "writer_image" : get_member_image(post_instance.member_idmember),
             },
-            "post_writer" : get_post_writer(post_instance),
+            "post_id" : post_instance.pk,
             "post_body" : model_to_dict(post_instance),
             "post_theme" : get_post_theme(post_instance),
-            "post_like" : get_post_like(post_instance,idmember)
+            "post_like" : get_post_like(post_instance,idmember),
+            "post_date" : post_instance.date,
         })
         return res # 게시글 뷰
         
@@ -62,25 +64,23 @@ class PostView(APIView):
 
 class CreatePost (APIView):
     def get(self,request):
-        cookies = request.COOKIES
+        access_token = request.headers.get('Authorization').split(' ')[1]
         response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/"
-                ,cookies=cookies # 쿠키도 함께 전달
+                f"{MAIN_DOMAIN}/authuser/userview/",
+                headers={"Authorization": f"Bearer {access_token}"},
             ).json()
-        #인증 실패
-        if response['message'] != "success":
-            return JsonResponse({ #로그인 뷰
-                "message": "logout",
-            }, status=status.HTTP_404_NOT_FOUND)
+        # 인증 실패
+        if response['message'] != 'success':
+            return JsonResponse({"message" : "logout"})
         user_info = response['user_info'] 
 
-        res = {
+        res = JsonResponse({
             "user_info" :{
                 'idmember' : user_info['idmember'],
                 'nickname' : user_info['nickname'],
             }
-        }
-        return JsonResponse(res) # 게시글 작성 화면
+        })
+        return res # 게시글 작성 화면
         
 
     def create_post(self,post_title,post_view,post_text,idmember):
@@ -152,16 +152,14 @@ class DeletePost(APIView):
 
 class EditPost(APIView):
     def get(self,request,idpost):
-        cookies = request.COOKIES
+        access_token = request.headers.get('Authorization').split(' ')[1]
         response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/"
-                ,cookies=cookies # 쿠키도 함께 전달
+                f"{MAIN_DOMAIN}/authuser/userview/",
+                headers={"Authorization": f"Bearer {access_token}"},
             ).json()
-        #인증 실패
-        if response['message'] != "success":
-            return JsonResponse({ #로그인 뷰
-                "message": "logout",
-            }, status=status.HTTP_404_NOT_FOUND)
+        # 인증 실패
+        if response['message'] != 'success':
+            return JsonResponse({"message" : "logout"})
         
         user_info = response['user_info']
         
@@ -207,16 +205,14 @@ class EditPost(APIView):
         
 
     def put(self,request,idpost):
-        cookies = request.COOKIES
+        access_token = request.headers.get('Authorization').split(' ')[1]
         response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/"
-                ,cookies=cookies # 쿠키도 함께 전달
+                f"{MAIN_DOMAIN}/authuser/userview/",
+                headers={"Authorization": f"Bearer {access_token}"},
             ).json()
-        #인증 실패
-        if response['message'] != "success":
-            return JsonResponse({ #로그인 뷰
-                "message": "logout",
-            }, status=status.HTTP_404_NOT_FOUND)
+        # 인증 실패
+        if response['message'] != 'success':
+            return JsonResponse({"message" : "logout"})
         
         # 내용 수정
         post_body = request.data['post_body']       

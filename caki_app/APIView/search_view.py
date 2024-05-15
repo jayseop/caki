@@ -47,7 +47,7 @@ class Search(APIView):
                     # "post_writer" : get_post_writer(post_instance),
                     # "post_body" : model_to_dict(post_instance),
                     # "post_theme" : post_theme,
-                    "idpsot" : post_instance.idpost,
+                    "psot_id" : post_instance.idpost,
                     "post_view" : post_instance.view,
                     "post_title": post_instance.title,
                     "post_like" : get_post_like(post_instance,idmember),

@@ -15,6 +15,18 @@ import requests
 import json
 from datetime import datetime, timedelta
 
+def get_pull_post(post_instance):
+    post = {
+        # "post_writer" : get_post_writer(post_instance),
+        # "post_body" : model_to_dict(post_instance),
+        # "post_theme" : get_post_theme(post_instance),
+        "post_id" : post_instance.pk,
+        "post_view" : None,
+        "post_title" : post_instance.title,
+        # "post_like" : get_post_like(post_instance,idmember),
+        # "post_keep" : get_post_keep(post_instance,idmember),
+        }
+    return post
 
 
 class Main(APIView):
@@ -34,17 +46,7 @@ class Main(APIView):
         for top_post in top_post_instances:
             idpost = top_post['post_idpost']
             post_instance = get_object_or_404(Post,pk = idpost)
-            pull_post = {
-                # "post_writer" : get_post_writer(post_instance),
-                # "post_body" : model_to_dict(post_instance),
-                # "post_theme" : get_post_theme(post_instance),
-                "idpost" : idpost,
-                "post_view" : None,
-                "post_title" : post_instance.title,
-                "post_like" : get_post_like(post_instance,idmember),
-                "post_keep" : get_post_keep(post_instance,idmember),
-
-            }
+            pull_post = get_pull_post(post_instance)
             post_list.append(pull_post)
 
         post_by_like = {
@@ -65,18 +67,7 @@ class Main(APIView):
         for top_post in top_post_instances:
             idpost = top_post['post_idpost']
             post_instance = get_object_or_404(Post,pk = idpost)
-            pull_post = {
-                # "post_writer" : get_post_writer(post_instance),
-                # "post_body" : model_to_dict(post_instance),
-                # "post_theme" : get_post_theme(post_instance),
-                "idpost" : idpost,
-                "post_view" : None,
-                "post_title" : post_instance.title,
-                "post_like" : get_post_like(post_instance,idmember),
-                "post_keep" : get_post_keep(post_instance,idmember),
-                "post_weather" : weather,
-
-            }
+            pull_post = get_pull_post(post_instance)
             post_list.append(pull_post)
 
         post_by_weather = {
@@ -110,7 +101,7 @@ class Main(APIView):
         res = JsonResponse({
             "user_info" : {
                 "idmember" : idmember,
-                "nickname" : nickname
+                "nickname" : nickname,
             },
             "weekly_trends" : weekly_trends,
         })

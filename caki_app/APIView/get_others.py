@@ -1,6 +1,9 @@
 from caki_app.models import *
 from django.forms.models import model_to_dict
+from django.shortcuts import get_object_or_404
 from datetime import datetime, timedelta
+from django.templatetags.static import static
+from django.conf import settings
 import requests
 
 # idpost를 외래키로 가진 테이블들을 하나로 통합하기 위함
@@ -31,7 +34,7 @@ def get_post_like(post_instance,idmember):
 def get_post_keep(post_instance,idmember):
     keep_exists = Keep.objects.filter(post_idpost = post_instance,member_idmember = idmember).exists()
     post_keep = {
-        "keep_exists": True if keep_exists else False # 좋아요 눌렀는지 확인
+        "keep_exists": True if keep_exists else False # 저장 눌렀는지 확인
     }
     return post_keep
 
@@ -97,3 +100,10 @@ def get_weather(nx,ny):
     
     except Exception as e:
         return str(e)
+    
+def get_member_image(idmember):
+    try :
+        member_image = get_object_or_404(MemberImage,member_idmember = idmember)
+        return member_image.image_path.url
+    except:
+        return f"{settings.STATIC_URL}defult_profile.jpg"

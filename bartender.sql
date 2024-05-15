@@ -210,6 +210,36 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
+INSERT INTO theme (state, tag) 
+VALUES ('보드카', '술');
+INSERT INTO theme (state, tag) 
+VALUES ('럼', '술');
+INSERT INTO theme (state, tag) 
+VALUES ('브랜디', '술');
+INSERT INTO theme (state, tag) 
+VALUES ('위스키', '술');
+INSERT INTO theme (state, tag) 
+VALUES ('리큐르', '술');
+INSERT INTO theme (state, tag) 
+VALUES ('진', '술');
+INSERT INTO theme (state, tag) 
+VALUES ('데킬라', '술');
+
+INSERT INTO theme (state, tag) 
+VALUES ('당도1', '당도');
+INSERT INTO theme (state, tag) 
+VALUES ('당도2', '당도');
+INSERT INTO theme (state, tag) 
+VALUES ('당도3', '당도');
+
+INSERT INTO theme (state, tag) 
+VALUES ('도수1', '도수');
+INSERT INTO theme (state, tag) 
+VALUES ('도수2', '도수');
+INSERT INTO theme (state, tag) 
+VALUES ('도수3', '도수');
+
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
