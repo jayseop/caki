@@ -3,12 +3,12 @@ from django.http import JsonResponse
 from django.forms.models import model_to_dict
 from rest_framework import status
 from rest_framework.views import APIView
-
+from caki_app.APIView.user_api_views import access_token_authentication
 from caki_app.models import  *
 from caki_app.APIView.get_others import *
 from mysite.settings import MAIN_DOMAIN
 import requests
-
+import json
 
 
 # 게시글 작성 api
@@ -29,32 +29,23 @@ import requests
 
 class PostView(APIView):
     def get(self,request,idpost):
-        access_token = request.headers.get('Authorization').split(' ')[1]
-        response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/",
-                headers={"Authorization": f"Bearer {access_token}"},
-            ).json()
-        
-        #인증 실패
-        if response['message'] != "success":
-            return JsonResponse({ #로그인 뷰
-                "message": "logout",
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        user_info = response['user_info']
+        try:
+            access_token = request.headers.get('Authorization').split(' ')[1]
+            user_info = access_token_authentication(access_token)
+        except Exception as e:
+            return{"message" : str(e)}
         idmember = user_info['idmember']
 
         post_instance = get_object_or_404(Post,pk = idpost)
         res = JsonResponse({
-            "user_id" : idmember,
             "post_writer_info" : {
                 "writer" : get_post_writer(post_instance),
                 "writer_image" : get_member_image(post_instance.member_idmember),
             },
-            "post_id" : post_instance.pk,
             "post_body" : model_to_dict(post_instance),
-            "post_theme" : get_post_theme(post_instance),
+            "post_tag" : get_post_tag(post_instance),
             "post_like" : get_post_like(post_instance,idmember),
+            "post_image" : get_post_image(post_instance),
             "post_date" : post_instance.date,
         })
         return res # 게시글 뷰
@@ -63,68 +54,76 @@ class PostView(APIView):
 
 
 class CreatePost (APIView):
-    def get(self,request):
-        access_token = request.headers.get('Authorization').split(' ')[1]
-        response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/",
-                headers={"Authorization": f"Bearer {access_token}"},
-            ).json()
-        # 인증 실패
-        if response['message'] != 'success':
-            return JsonResponse({"message" : "logout"})
-        user_info = response['user_info'] 
-
-        res = JsonResponse({
-            "user_info" :{
-                'idmember' : user_info['idmember'],
-                'nickname' : user_info['nickname'],
-            }
-        })
-        return res # 게시글 작성 화면
-        
-
-    def create_post(self,post_title,post_view,post_text,idmember):
+    def create_post(self,post_title,post_text,idmember):
         member_instance = get_object_or_404(Member,pk = idmember)
 
         new_post = Post.objects.create(
             title = post_title,
-            view = post_view,
             text = post_text,
             member_idmember = member_instance
         )
         # 생성된 게시글의 기본키
-        return new_post 
+        return new_post
     
 
-    def create_theme(self,new_post,keywords):
-        for value in keywords:
-            theme_instance = get_object_or_404(Theme,state = value)    
-            temp_instance = Temp.objects.create(
-                theme_idtheme = theme_instance,
+    def create_tag(self,new_post,tags):
+        for tag in tags:  
+            tag_instance = Tag.objects.create(
+                tag = tag,
                 post_idpost = new_post
             )
 
-        return temp_instance
+        return tag_instance
+    
+    def creat_image(self,new_post,images):
+        for image in images:
+            image_instance = Image.objects.create(
+                image_name =  image,
+                image_path = image,
+                post_idpost = new_post,
+            )
+        return image_instance
 
     def post(self,request):
+        try:
+            access_token = request.headers.get('Authorization').split(' ')[1]
+            user_info = access_token_authentication(access_token)
+        except Exception as e:
+            return{"message" : str(e)}
+        idmember = user_info['idmember']
+        
         # 내용 저장
         post_body = request.data['post_body']
+        # post_body = json.loads(post_body)
+
         new_post = self.create_post(
-            post_title = post_body['title'],
-            post_view = post_body['view'],
-            post_text = post_body['text'],
-            idmember = post_body['idmember'])
+            post_title = post_body.get("title",''),
+            post_text = post_body.get("text",''),
+            idmember = idmember
+            )
 
         # 키워드 저장
-        keywords = request.data['post_theme']
-        self.create_theme( 
-            new_post, 
-            keywords
-        )
+        if 'post_tag' in request.data:
+            tags = request.data['post_tag']
+            self.create_tag(new_post, tags)
 
+        # 사진 저장
+        if 'post_image' in request.FILES:
+            images = request.FILES.getlist('post_image')
+            self.creat_image(new_post,images)
+            
 
+        post_instance = new_post
         res = JsonResponse({
-            "new_post": model_to_dict(new_post),
+            "post_writer_info" : {
+                "writer" : get_post_writer(post_instance),
+                "writer_image" : get_member_image(post_instance.member_idmember),
+            },
+            "post_id" : post_instance.pk,
+            "post_body" : model_to_dict(post_instance),
+            "post_tag" : get_post_tag(post_instance),
+            "post_image" : get_post_image(post_instance),
+            "post_date" : post_instance.date,
             "message" : 'success'
             })
 
@@ -138,52 +137,32 @@ class DeletePost(APIView):
         try:
             Keep.objects.filter(post_idpost = idpost).delete()
             Like.objects.filter(post_idpost = idpost).delete()
-            Temp.objects.filter(post_idpost = idpost).delete()
-            Image.objects.filter(post_idpost = idpost).delete()
-            Video.objects.filter(post_idpost = idpost).delete()
+            Tag.objects.filter(post_idpost = idpost).delete()
 
+            # 이미지 파일 삭제
+            image_instances = Image.objects.filter(post_idpost = idpost)
+            for image_instance in image_instances:
+                image_file_path = os.path.join(settings.MEDIA_ROOT, image_instance.image_path.name)
+                if os.path.isfile(image_file_path): # 이미지 삭제
+                    os.remove(image_file_path)
+            curr_dir_path = os.path.dirname(image_file_path)
+            if os.path.exists(curr_dir_path): # 이미지 상위 폴더 삭제
+                os.rmdir(curr_dir_path)
+            image_instances.delete()
+
+
+            Video.objects.filter(post_idpost = idpost).delete()
             Post.objects.filter(idpost = idpost).delete()
 
-
             return JsonResponse({'message':'success'})
-        except:
-            return JsonResponse({'message' : 'empty idpost'})
+        except Exception as e:
+            return JsonResponse({'message' : str(e)})
 
 
 class EditPost(APIView):
-    def get(self,request,idpost):
-        access_token = request.headers.get('Authorization').split(' ')[1]
-        response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/",
-                headers={"Authorization": f"Bearer {access_token}"},
-            ).json()
-        # 인증 실패
-        if response['message'] != 'success':
-            return JsonResponse({"message" : "logout"})
-        
-        user_info = response['user_info']
-        
+    def edit_body(self,post_body,idpost):
         post_instance = get_object_or_404(Post,pk = idpost)
-        res = JsonResponse({
-            "user_info" : {
-                'idmember' : user_info['idmember'],
-                'nickname' : user_info['nickname'],
-            },
-            "post_body" : model_to_dict(post_instance),
-            "post_theme" : get_post_theme(post_instance),             
-            "message" : "success",
-        })
-        
-        # 인증 성공
-        return res # 작성된 게시글  
-
-
-    def edit_post(self,post_body,idpost):
-        post_instance = get_object_or_404(Post,pk = idpost)
-
-
         post_instance.title = post_body['title']
-        post_instance.view = post_body['view']
         post_instance.text = post_body['text']
 
         post_instance.date = timezone.localtime(timezone.now())
@@ -192,43 +171,83 @@ class EditPost(APIView):
         return post_instance 
     
 
-    def edit_theme(self,edit_post,keywords):
-        Temp.objects.filter(post_idpost = edit_post).delete()
-        for value in keywords:
-            theme_instance = get_object_or_404(Theme,state = value)    
-            temp_instance = Temp.objects.create(
-                theme_idtheme = theme_instance,
-                post_idpost = edit_post
-            )
+    def edit_tag(self,post_instance,new_tags):
+        exist_tag_instances = Tag.objects.filter(post_idpost = post_instance.pk)
+        exist_tags = []
+        for exist_tag_instance in  exist_tag_instances:
+            exist_tags.append(exist_tag_instance.tag)      
 
-        return temp_instance
-        
+        for tag in exist_tags: 
+            if tag not in new_tags:
+                Tag.objects.get(post_idpost = post_instance.pk, tag = tag).delete()
+
+        for tag in new_tags: 
+            if tag not in exist_tags :
+                Tag.objects.create(
+                    tag = tag,
+                    post_idpost = post_instance
+                )
+
+        return 0
+    
+    def edit_image(self,post_instance,new_images):
+        exist_image_instances = Image.objects.filter(post_idpost = post_instance.pk)
+        exist_image = []
+        for exist_image_instance in  exist_image_instances:
+            exist_image.append(exist_image_instance.image_name)    
+
+
+        for image in exist_image: 
+            if image not in new_images:
+                Image.objects.get(post_idpost = post_instance.pk, image_name = image).delete()
+
+        for image in new_images: 
+            if image not in exist_image :
+                Image.objects.create(
+                    image_name = image,
+                    image_path = image,
+                    post_idpost = post_instance
+                )
+
+        return 0
 
     def put(self,request,idpost):
-        access_token = request.headers.get('Authorization').split(' ')[1]
-        response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/",
-                headers={"Authorization": f"Bearer {access_token}"},
-            ).json()
-        # 인증 실패
-        if response['message'] != 'success':
-            return JsonResponse({"message" : "logout"})
+        try:
+            access_token = request.headers.get('Authorization').split(' ')[1]
+            user_info = access_token_authentication(access_token)
+        except Exception as e:
+            return{"message" : str(e)}
+        
+        post_instance = get_object_or_404(Post,pk = idpost)
         
         # 내용 수정
-        post_body = request.data['post_body']       
-        edit_post = self.edit_post(
-            post_body = post_body,
-            idpost = idpost
-            )
+        if "post_body" in request.data:
+            post_body = request.data['post_body']  
+            # post_body = json.loads(post_body)     
+            edit_body = self.edit_body(
+                post_body = post_body,
+                idpost = idpost
+                )
 
         # 키워드 수정
-        keywords = request.data['post_theme']
-        self.edit_theme( 
-            edit_post=edit_post, 
-            keywords=keywords
-        )
+        if "post_tag" in request.data:
+            new_tags = request.data['post_tag']
+            # new_tags = json.loads(new_tags)  
+            self.edit_tag( 
+                post_instance=post_instance, 
+                new_tags=new_tags
+            )
+        
+        # 사진 수정
+        if "post_image" in request.FILES:
+            new_images = request.FILES.getlist('post_image')
+            self.edit_image( 
+                post_instance = post_instance,
+                new_images = new_images,
+            )
+
         res = JsonResponse({
-            "edit_post": model_to_dict(edit_post),
+            "edit_post": model_to_dict(edit_body),
             "message" : 'success'
             })
 

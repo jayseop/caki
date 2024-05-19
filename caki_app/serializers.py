@@ -1,6 +1,6 @@
 from .models import Member
 from rest_framework import serializers
-import datetime
+from django.conf import settings
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,7 +12,8 @@ class UserSerializer(serializers.ModelSerializer):
             email = validated_data['email'],
             password = validated_data['password'],
             nickname = validated_data['nickname'],
-            qual = validated_data.get('qual',None),
-            introduce = validated_data.get('introduce',None)
+            qual = None,
+            introduce = None,
+            image_path = None,
         )
         return user

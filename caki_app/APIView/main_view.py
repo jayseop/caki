@@ -9,24 +9,12 @@ from rest_framework.views import APIView
 from caki_app.models import Like,Keep,Member,Post
 from caki_app.serializers import *
 from caki_app.APIView.get_others import *
+from caki_app.APIView.user_api_views import access_token_authentication
 
 from mysite.settings import MAIN_DOMAIN
 import requests
 import json
 from datetime import datetime, timedelta
-
-def get_pull_post(post_instance):
-    post = {
-        # "post_writer" : get_post_writer(post_instance),
-        # "post_body" : model_to_dict(post_instance),
-        # "post_theme" : get_post_theme(post_instance),
-        "post_id" : post_instance.pk,
-        "post_view" : None,
-        "post_title" : post_instance.title,
-        # "post_like" : get_post_like(post_instance,idmember),
-        # "post_keep" : get_post_keep(post_instance,idmember),
-        }
-    return post
 
 
 class Main(APIView):
@@ -39,15 +27,15 @@ class Main(APIView):
         # 게시글 별로 좋아요 수를 집계
         liked_posts = recent_likes.values('post_idpost').annotate(like_count=Count('post_idpost'))
         # 게시글 좋아요 순으로 가져오기
-        top_post_instances = liked_posts.order_by('-like_count')
+        top_post_instances = liked_posts.order_by('-like_count')[:10]
 
         # idpost = top_post['post_idPost']로 post 인스턴스 생성
         post_list = []
         for top_post in top_post_instances:
             idpost = top_post['post_idpost']
             post_instance = get_object_or_404(Post,pk = idpost)
-            pull_post = get_pull_post(post_instance)
-            post_list.append(pull_post)
+            post_preview = get_post_preview(post_instance)
+            post_list.append(post_preview)
 
         post_by_like = {
             "post_by_like" : post_list
@@ -60,15 +48,15 @@ class Main(APIView):
 
         liked_posts = like_by_weather.values('post_idpost').annotate(like_count=Count('post_idpost'))
         # 게시글 좋아요 순으로 가져오기
-        top_post_instances = liked_posts.order_by('-like_count')
+        top_post_instances = liked_posts.order_by('-like_count')[:10]
 
         # idpost = top_post['post_idPost']로 post 인스턴스 생성
         post_list = []
         for top_post in top_post_instances:
             idpost = top_post['post_idpost']
             post_instance = get_object_or_404(Post,pk = idpost)
-            pull_post = get_pull_post(post_instance)
-            post_list.append(pull_post)
+            post_preview = get_post_preview(post_instance)
+            post_list.append(post_preview)
 
         post_by_weather = {
             "post_by_weather" : post_list
@@ -76,16 +64,11 @@ class Main(APIView):
         return post_by_weather
 
     def get(self,request):
-        access_token = request.headers.get('Authorization').split(' ')[1]
-        response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/",
-                headers={"Authorization": f"Bearer {access_token}"},
-            ).json()
-        # 인증 실패
-        if response['message'] != 'success':
-            return JsonResponse({"message" : "logout"})
-        
-        user_info = response['user_info']
+        try:
+            access_token = request.headers.get('Authorization').split(' ')[1]
+            user_info = access_token_authentication(access_token)
+        except Exception as e:
+            return{"message" : str(e)}
         idmember = user_info['idmember']
         nickname = user_info['nickname']
 
@@ -105,4 +88,27 @@ class Main(APIView):
             },
             "weekly_trends" : weekly_trends,
         })
+        return res
+    
+class AlcoholCategory(APIView):
+    def get(self, request, category):
+        try:
+            access_token = request.headers.get('Authorization').split(' ')[1]
+            user_info = access_token_authentication(access_token)
+        except Exception as e:
+            return{"message" : str(e)}
+        idmember = user_info['idmember']
+        post_list = []
+
+        post_instances = Post.objects.all().order_by()
+        for post_instance in post_instances:
+            if Tag.objects.filter(post_idpost = post_instance.pk, tag = category).exists():
+                post_preview = get_post_preview(post_instance)
+                post_list.append(post_preview)
+
+        res = JsonResponse({
+                    "post_list" : post_list,
+                    "message" : 'success'
+                    })
+
         return res

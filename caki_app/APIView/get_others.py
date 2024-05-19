@@ -1,21 +1,17 @@
 from caki_app.models import *
-from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 from datetime import datetime, timedelta
-from django.templatetags.static import static
-from django.conf import settings
 import requests
 
 # idpost를 외래키로 가진 테이블들을 하나로 통합하기 위함
 # idpost를 인자로 주면 흩어져있던 테이블들을 하나로 통합후 리턴
 
-def get_post_theme(post_instance):
-    temp_instances = Temp.objects.filter(post_idpost = post_instance.pk)
-    post_theme = []
-    for temp in temp_instances:
-        theme = temp.theme_idtheme
-        post_theme.append(theme.state)
-    return post_theme
+def get_post_tag(post_instance):
+    tag_instances = Tag.objects.filter(post_idpost = post_instance.pk)
+    post_tag = []
+    for tag_instance in tag_instances:
+        post_tag.append(tag_instance.tag)
+    return post_tag
     
 def get_post_writer(post_instance):
     member_intance = post_instance.member_idmember
@@ -102,8 +98,27 @@ def get_weather(nx,ny):
         return str(e)
     
 def get_member_image(idmember):
-    try :
-        member_image = get_object_or_404(MemberImage,member_idmember = idmember)
-        return member_image.image_path.url
+    try:
+        member_image_path = get_object_or_404(Member,pk = idmember).image_path
+        return member_image_path.url
     except:
-        return f"{settings.STATIC_URL}defult_profile.jpg"
+        return None
+
+def get_post_image(post_intance):
+    image_intances = Image.objects.filter(post_idpost = post_intance.pk)
+    image_url = []
+    for image_intance in image_intances:
+        image_url.append(image_intance.image_path.url)
+    if not image_url:
+        return None
+    return image_url
+
+
+    
+def get_post_preview(post_instance):
+    preview = {
+        "post_id" : post_instance.idpost,
+        "post_title" : post_instance.title,
+        "post_image" :  get_post_image(post_instance)
+    }
+    return preview

@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 
 from caki_app.models import Post
 from caki_app.APIView.get_others import *
+from caki_app.APIView.user_api_views import access_token_authentication
 from mysite.settings import MAIN_DOMAIN
 
 import requests
@@ -39,35 +40,22 @@ class Search(APIView):
         post_list=[]
         for post_instance in post_instances:
             # 게시글의 테마 가져옴
-            post_theme = get_post_theme(post_instance)
+            post_tag = get_post_tag(post_instance)
 
             #keyword가 post_theme의 부분집합일때
-            if set(keywords).issubset(set(post_theme)) or keywords == [''] :
-                pull_posts = {
-                    # "post_writer" : get_post_writer(post_instance),
-                    # "post_body" : model_to_dict(post_instance),
-                    # "post_theme" : post_theme,
-                    "psot_id" : post_instance.idpost,
-                    "post_view" : post_instance.view,
-                    "post_title": post_instance.title,
-                    "post_like" : get_post_like(post_instance,idmember),
-                    "post_keep" : get_post_keep(post_instance,idmember),
-                }
-                post_list.append(pull_posts)
+            if set(keywords).issubset(set(post_tag)) or keywords == [''] :
+                post_preview = get_post_preview(post_instance)
+                post_list.append(post_preview)
 
         return post_list
 
 
     def get(self,request):
-        access_token = request.headers.get('Authorization').split(' ')[1]
-        response = requests.get (
-                f"{MAIN_DOMAIN}/authuser/userview/",
-                headers={"Authorization": f"Bearer {access_token}"},
-            ).json()
-        # 인증 실패
-        if response['message'] != 'success':
-            return JsonResponse({"message" : "logout"})
-        user_info = response['user_info']
+        try:
+            access_token = request.headers.get('Authorization').split(' ')[1]
+            user_info = access_token_authentication(access_token)
+        except Exception as e:
+            return{"message" : str(e)}
         idmember = user_info['idmember']        
 
 

@@ -28,11 +28,12 @@ CREATE TABLE IF NOT EXISTS `bartender`.`member` (
   `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `qual` VARCHAR(4) NULL DEFAULT NULL,
   `introduce` VARCHAR(255) NULL DEFAULT NULL,
+  `image_path` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`idMember`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
   UNIQUE INDEX `nickname_UNIQUE` (`nickname` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 15
+AUTO_INCREMENT = 24
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -44,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`post` (
   `idPost` BIGINT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(300) NOT NULL,
   `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `view` VARCHAR(45) NOT NULL DEFAULT '0',
+  `view` TEXT NULL DEFAULT NULL,
   `text` VARCHAR(8000) NOT NULL,
   `Member_idMember` BIGINT NOT NULL,
   PRIMARY KEY (`idPost`),
@@ -53,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`post` (
     FOREIGN KEY (`Member_idMember`)
     REFERENCES `bartender`.`member` (`idMember`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 9
+AUTO_INCREMENT = 10
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -169,7 +170,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`theme` (
   `tag` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idTheme`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 14
+AUTO_INCREMENT = 27
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -209,36 +210,6 @@ CREATE TABLE IF NOT EXISTS `bartender`.`video` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
-
-INSERT INTO theme (state, tag) 
-VALUES ('보드카', '술');
-INSERT INTO theme (state, tag) 
-VALUES ('럼', '술');
-INSERT INTO theme (state, tag) 
-VALUES ('브랜디', '술');
-INSERT INTO theme (state, tag) 
-VALUES ('위스키', '술');
-INSERT INTO theme (state, tag) 
-VALUES ('리큐르', '술');
-INSERT INTO theme (state, tag) 
-VALUES ('진', '술');
-INSERT INTO theme (state, tag) 
-VALUES ('데킬라', '술');
-
-INSERT INTO theme (state, tag) 
-VALUES ('당도1', '당도');
-INSERT INTO theme (state, tag) 
-VALUES ('당도2', '당도');
-INSERT INTO theme (state, tag) 
-VALUES ('당도3', '당도');
-
-INSERT INTO theme (state, tag) 
-VALUES ('도수1', '도수');
-INSERT INTO theme (state, tag) 
-VALUES ('도수2', '도수');
-INSERT INTO theme (state, tag) 
-VALUES ('도수3', '도수');
-
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

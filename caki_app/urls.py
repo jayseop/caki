@@ -19,8 +19,6 @@ urlpatterns = [
     # 로그인 - post, 로그아웃 - delete
     path('authuser/', AuthUserAPIView.as_view(), name='authuser'),
 
-    # 유저 인증
-    path("authuser/userview/",UserView.as_view(),name = 'userview'),
     # access token 재발급
     path("token/refresh/",TokenRefreshView.as_view(), name='token_refresh'),
      
@@ -32,6 +30,8 @@ urlpatterns = [
 
     # 메인뷰
     path('main/',Main.as_view(),name="main"),
+    # 카테고리별 뷰
+    path('main/<str:category>/',AlcoholCategory.as_view(),name = 'alcoholcategory'),
 
     # 게시글 보기
     path('postview/<int:idpost>/',PostView.as_view(),name='postview'),
@@ -44,9 +44,9 @@ urlpatterns = [
     # 게시글 수정 post - 수정
     path('editpost/<int:idpost>/',EditPost.as_view(),name='editpsot'),
     # 게시글 저장 - get, 삭제 -delete
-    path('addkeep/<int:idpost>/<int:idmember>/',AddKeep.as_view(),name='addkeep'),
+    path('addkeep/<int:idpost>/',AddKeep.as_view(),name='addkeep'),
     # 게시글 좋아요 확인 - get, 좋아요 - post, 삭제 - delete
-    path('like/<int:idpost>/<int:idmember>/',LikePost.as_view(),name = 'likepost'),
+    path('like/<int:idpost>/',LikePost.as_view(),name = 'likepost'),
 
     # 검색 페이지
     path('searchview/',SearchView.as_view(),name="searchview"),
