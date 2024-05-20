@@ -140,7 +140,8 @@ class Like(models.Model):
 
 class Review(models.Model):
     idreview = models.BigIntegerField(db_column='idReview', primary_key=True)  # Field name made lowercase.  
-    post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')  # Field name made lowercase.
+    post_idpost = models.ForeignKey(Post, models.DO_NOTHING, db_column='Post_idPost')
+    member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')   # Field name made lowercase.
     review = models.TextField()
 
     class Meta:

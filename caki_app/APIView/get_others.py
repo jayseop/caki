@@ -1,6 +1,7 @@
 from caki_app.models import *
 from django.shortcuts import get_object_or_404
 from datetime import datetime, timedelta
+from django.db.models import Count
 import requests
 
 # idpost를 외래키로 가진 테이블들을 하나로 통합하기 위함
@@ -22,8 +23,8 @@ def get_post_like(post_instance,idmember):
     like_exists = Like.objects.filter(post_idpost = post_instance,member_idmember = idmember).exists()
     like_cnt = Like.objects.filter(post_idpost = post_instance).count()
     post_like = {
-        "like_cnt" : like_cnt, # 좋아요 수
-        "like_exists": True if like_exists else False # 좋아요 눌렀는지 확인
+        "cnt" : like_cnt, # 좋아요 수
+        "exists": True if like_exists else False # 좋아요 눌렀는지 확인
     }
     return post_like
 
@@ -122,3 +123,23 @@ def get_post_preview(post_instance):
         "post_image" :  get_post_image(post_instance)
     }
     return preview
+
+def get_post_review(post_instance,idmember):
+    post_reivew = Review.objects.filter(post_idpost = post_instance.pk)
+    keyword_cnt_q = post_reivew.values('review').annotate(count=Count('review'))
+
+
+    
+
+    review = []
+
+    for keyword_cnt in keyword_cnt_q:
+        keyword = keyword_cnt.get('review')
+        cnt = keyword_cnt.get('count')
+        info = {
+            "keyword" : keyword,
+            "cnt" : cnt,
+            "exists" : post_reivew.filter(member_idmember = idmember, review = keyword).exists()
+        }
+        review.append(info)
+    return review

@@ -39,8 +39,8 @@ class PostView(APIView):
         post_instance = get_object_or_404(Post,pk = idpost)
         res = JsonResponse({
             "post_writer_info" : {
-                "writer" : get_post_writer(post_instance),
-                "writer_image" : get_member_image(post_instance.member_idmember),
+                "name" : get_post_writer(post_instance),
+                "image" : get_member_image(post_instance.member_idmember),
             },
             "post_body" : model_to_dict(post_instance),
             "post_tag" : get_post_tag(post_instance),
@@ -115,9 +115,9 @@ class CreatePost (APIView):
 
         post_instance = new_post
         res = JsonResponse({
-            "post_writer_info" : {
-                "writer" : get_post_writer(post_instance),
-                "writer_image" : get_member_image(post_instance.member_idmember),
+            "post_writer" : {
+                "name" : get_post_writer(post_instance),
+                "image" : get_member_image(post_instance.member_idmember),
             },
             "post_id" : post_instance.pk,
             "post_body" : model_to_dict(post_instance),
@@ -150,7 +150,7 @@ class DeletePost(APIView):
                 os.rmdir(curr_dir_path)
             image_instances.delete()
 
-
+            Review.objects.filter(post_idpost = idpost).delete()
             Video.objects.filter(post_idpost = idpost).delete()
             Post.objects.filter(idpost = idpost).delete()
 
@@ -252,3 +252,5 @@ class EditPost(APIView):
             })
 
         return res
+    
+

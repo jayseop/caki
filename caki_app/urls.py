@@ -2,11 +2,11 @@ from django.urls import path
 from .APIView.user_api_views import *
 from .APIView.social_login_view import *
 from .APIView.post_view import *
-from .APIView.keep_post_view import *
+from .APIView.keep_like_view import *
 from .APIView.search_view import *
 from .APIView.main_view import *
-from .APIView.change_myinfo_view import *
 from .APIView.profile_view import *
+from .APIView.review_api_view import *
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -47,18 +47,18 @@ urlpatterns = [
     path('addkeep/<int:idpost>/',AddKeep.as_view(),name='addkeep'),
     # 게시글 좋아요 확인 - get, 좋아요 - post, 삭제 - delete
     path('like/<int:idpost>/',LikePost.as_view(),name = 'likepost'),
+    # 키워드 리뷰
+    path('review/<int:idpost>/',KeywordReview.as_view(),name = 'review'),
 
     # 검색 페이지
     path('searchview/',SearchView.as_view(),name="searchview"),
     # 검색
     path('search/',Search.as_view(), name = 'searchpost'),
 
-    # 프로필
+    # 프로필 뷰 - get, 수정 - put 
     path('<str:profile_nick>/',Profile.as_view(), name = 'profile'),
-    # 프로필 수정
-    path('change/myinfo/', ChangeInfo.as_view(), name='changeinfo'),
     # 프로필 기본 사진 변경
-    path('change/defult_image/<int:idmember>/',ChangeDefultImage.as_view(), name= 'changedefultimage'),
+    path('defult_image/',DefultImage.as_view(), name= 'defultimage'),
 ] 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
     # 업로드 된 URL, 실제 파일 위치
