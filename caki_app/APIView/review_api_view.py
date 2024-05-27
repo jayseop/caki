@@ -13,11 +13,10 @@ import json
 
 class KeywordReview(APIView):
     def post(self,request,idpost):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}     
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+
+    
         idmember = user_info['idmember']
 
         member_instance = get_object_or_404(Member,pk = idmember)
@@ -33,7 +32,7 @@ class KeywordReview(APIView):
             if review not in new_review:
                review_instance.delete()
                review_values.remove(review)
-               
+
         for new_keyword in new_review:
             if new_keyword not in review_values:
                 Review.objects.create(

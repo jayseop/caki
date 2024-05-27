@@ -44,7 +44,7 @@ urlpatterns = [
     # 게시글 수정 post - 수정
     path('editpost/<int:idpost>/',EditPost.as_view(),name='editpsot'),
     # 게시글 저장 - get, 삭제 -delete
-    path('addkeep/<int:idpost>/',AddKeep.as_view(),name='addkeep'),
+    path('keep/<int:idpost>/',AddKeep.as_view(),name='addkeep'),
     # 게시글 좋아요 확인 - get, 좋아요 - post, 삭제 - delete
     path('like/<int:idpost>/',LikePost.as_view(),name = 'likepost'),
     # 키워드 리뷰

@@ -118,6 +118,7 @@ def get_post_image(post_intance):
     
 def get_post_preview(post_instance):
     preview = {
+        "writer_nickname" : post_instance.member_idmember.nickname,
         "post_id" : post_instance.idpost,
         "post_title" : post_instance.title,
         "post_image" :  get_post_image(post_instance)
@@ -127,12 +128,7 @@ def get_post_preview(post_instance):
 def get_post_review(post_instance,idmember):
     post_reivew = Review.objects.filter(post_idpost = post_instance.pk)
     keyword_cnt_q = post_reivew.values('review').annotate(count=Count('review'))
-
-
-    
-
     review = []
-
     for keyword_cnt in keyword_cnt_q:
         keyword = keyword_cnt.get('review')
         cnt = keyword_cnt.get('count')

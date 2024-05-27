@@ -14,8 +14,11 @@ import re
 
 class SearchView(APIView):
     def get(self,request):
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
         title_list = list(Post.objects.values_list('title', flat=True))
         res = JsonResponse({
+            "user_info" : user_info,
             "title_list" : title_list,
         })
         return res
@@ -51,11 +54,9 @@ class Search(APIView):
 
 
     def get(self,request):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+
         idmember = user_info['idmember']        
 
 

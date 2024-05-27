@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`member` (
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
   UNIQUE INDEX `nickname_UNIQUE` (`nickname` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 25
+AUTO_INCREMENT = 30
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`post` (
     FOREIGN KEY (`Member_idMember`)
     REFERENCES `bartender`.`member` (`idMember`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 22
+AUTO_INCREMENT = 23
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -162,6 +162,26 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
+-- Table `bartender`.`postviews`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `bartender`.`postviews` (
+  `Post_idPpsot` BIGINT NOT NULL,
+  `Member_idMember` BIGINT NOT NULL,
+  `date` VARCHAR(45) NOT NULL,
+  INDEX `fk_member_postviews_idx` (`Member_idMember` ASC) VISIBLE,
+  INDEX `fk_post_postviews` (`Post_idPpsot` ASC) VISIBLE,
+  CONSTRAINT `fk_member_postviews`
+    FOREIGN KEY (`Member_idMember`)
+    REFERENCES `bartender`.`member` (`idMember`),
+  CONSTRAINT `fk_post_postviews`
+    FOREIGN KEY (`Post_idPpsot`)
+    REFERENCES `bartender`.`post` (`idPost`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
 -- Table `bartender`.`review`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bartender`.`review` (
@@ -197,7 +217,7 @@ CREATE TABLE IF NOT EXISTS `bartender`.`tag` (
     FOREIGN KEY (`Post_idPost`)
     REFERENCES `bartender`.`post` (`idPost`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 24
+AUTO_INCREMENT = 27
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 

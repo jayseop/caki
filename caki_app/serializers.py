@@ -1,3 +1,4 @@
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Member
 from rest_framework import serializers
 from django.conf import settings
@@ -12,8 +13,22 @@ class UserSerializer(serializers.ModelSerializer):
             email = validated_data['email'],
             password = validated_data['password'],
             nickname = validated_data['nickname'],
-            qual = None,
-            introduce = None,
-            image_path = None,
+            qual = '',
+            introduce = '',
+            image_path = '',
         )
         return user
+    
+
+
+class LoginSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token['email'] = user.email
+        token['nickname'] = user.nickname
+        token['qual'] = user.qual
+
+        return token

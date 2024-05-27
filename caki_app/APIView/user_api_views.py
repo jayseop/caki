@@ -2,7 +2,6 @@ from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404,redirect
 from rest_framework import status
 from django.http import JsonResponse
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework.views import APIView
 from caki_app.models import *
 from caki_app.serializers import *
@@ -15,10 +14,13 @@ import jwt
 def access_token_authentication(access_token):
     # access token을 decode 해서 유저 id 추출 => 유저 식별
     payload = jwt.decode(access_token, SECRET_KEY, algorithms=['HS256']) # access 토큰으로 유저 확인
-    pk = payload.get('user_id') # pk = idMember
-    user = get_object_or_404(Member, pk=pk) # 데이터 베이스에서 유저 정보 추출
-    serializer = UserSerializer(instance=user)
-    return  serializer.data
+    user_info = {
+        'idmember' : payload.get('user_id'), # pk = idMember
+        'nickname' : payload.get('nickname'),
+        'email' : payload.get('email'),
+        'qual' : payload.get('qual'),
+    }
+    return user_info
 
 # 회원가입 test용
 # {
@@ -37,10 +39,8 @@ class SignupAPIView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-
-            
             user = serializer.save() 
-            token = TokenObtainPairSerializer.get_token(user)
+            token = LoginSerializer.get_token(user)
             refresh_token = str(token)
             access_token = str(token.access_token)
 
@@ -81,7 +81,7 @@ class AuthUserAPIView(APIView):
         if user is not None:
             serializer = UserSerializer(user)
             # jwt 토큰 접근
-            token = TokenObtainPairSerializer.get_token(user)
+            token = LoginSerializer.get_token(user)
             refresh_token = str(token)
             access_token = str(token.access_token)
 
@@ -90,7 +90,6 @@ class AuthUserAPIView(APIView):
             res = JsonResponse(
                 {
                     "user_info": serializer.data,
-                    "image_url" : get_member_image(idmember=idmember),
                     "access_token" : access_token,
                     "refresh_token" : refresh_token,
                     'message': 'success',

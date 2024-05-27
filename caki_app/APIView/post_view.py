@@ -11,42 +11,41 @@ import requests
 import json
 
 
-# 게시글 작성 api
-# {
-#     "contents" :{
-#                     "title": "독도",
-#                     "view" : "test_view",
-#                     "text" : "만드는 방법",
-#                     "idmember" : 13
-#                 },
-#     "keyword":  {
-#                     "술종류" : ["보드카","진"],
-#                     "당도" : ["당도1"],
-#                     "도수" : ["도수1"],
-#                     "음료" : []
-#                 }
-# }
-
 class PostView(APIView):
-    def get(self,request,idpost):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
-        idmember = user_info['idmember']
+    # 조회 기록
+    def create_postviews(self,post_instance,member_instance):
+        postviews_obj = Postviews.objects
+        if postviews_obj.filter(post_idpost = post_instance.pk, member_idmember = member_instance.pk).exists():
+            return 0
+        postview_cnt = postviews_obj.filter(member_idmember = member_instance.pk).count()
+        if postview_cnt == 50:
+            postviews_obj.order_by('date').first().delete()
+        postviews_obj.create(
+            post_idpost = post_instance,
+            member_idmember = member_instance,
+        )
 
+    def get(self,request,idpost):
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+        
+        idmember = user_info['idmember']
         post_instance = get_object_or_404(Post,pk = idpost)
+        member_instance = get_object_or_404(Member,pk=idmember)
+        # 조회수 기록
+        self.create_postviews(post_instance,member_instance)
         res = JsonResponse({
-            "post_writer_info" : {
-                "name" : get_post_writer(post_instance),
+            "user_info" : user_info,
+            "post_writer" : {
+                "nickname" : get_post_writer(post_instance),
                 "image" : get_member_image(post_instance.member_idmember),
             },
             "post_body" : model_to_dict(post_instance),
             "post_tag" : get_post_tag(post_instance),
             "post_like" : get_post_like(post_instance,idmember),
+            "post_keep" : get_post_keep(post_instance,idmember),
+            "post_review" : get_post_review(post_instance,idmember),
             "post_image" : get_post_image(post_instance),
-            "post_date" : post_instance.date,
         })
         return res # 게시글 뷰
         
@@ -85,16 +84,14 @@ class CreatePost (APIView):
         return image_instance
 
     def post(self,request):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+
         idmember = user_info['idmember']
         
-        # 내용 저장
-        post_body = request.data['post_body']
-        # post_body = json.loads(post_body)
+        # post_body가 문자열인 경우에만 JSON 형식으로 변환
+        if isinstance(post_body, str):
+            post_body = json.loads(post_body)
 
         new_post = self.create_post(
             post_title = post_body.get("title",''),
@@ -102,9 +99,11 @@ class CreatePost (APIView):
             idmember = idmember
             )
 
-        # 키워드 저장
+        # 키워드 저장cd ../
         if 'post_tag' in request.data:
             tags = request.data['post_tag']
+            if isinstance(tags, str):
+                tags = json.loads(tags)
             self.create_tag(new_post, tags)
 
         # 사진 저장
@@ -115,6 +114,7 @@ class CreatePost (APIView):
 
         post_instance = new_post
         res = JsonResponse({
+            "user_info" : user_info,
             "post_writer" : {
                 "name" : get_post_writer(post_instance),
                 "image" : get_member_image(post_instance.member_idmember),
@@ -134,30 +134,30 @@ class CreatePost (APIView):
 # 따로 유저 인증은 필요 없어보임
 class DeletePost(APIView):
     def delete(self,request,idpost):
-        try:
-            Keep.objects.filter(post_idpost = idpost).delete()
-            Like.objects.filter(post_idpost = idpost).delete()
-            Tag.objects.filter(post_idpost = idpost).delete()
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
 
-            # 이미지 파일 삭제
-            image_instances = Image.objects.filter(post_idpost = idpost)
-            for image_instance in image_instances:
-                image_file_path = os.path.join(settings.MEDIA_ROOT, image_instance.image_path.name)
-                if os.path.isfile(image_file_path): # 이미지 삭제
-                    os.remove(image_file_path)
-            curr_dir_path = os.path.dirname(image_file_path)
-            if os.path.exists(curr_dir_path): # 이미지 상위 폴더 삭제
-                os.rmdir(curr_dir_path)
-            image_instances.delete()
+        Keep.objects.filter(post_idpost = idpost).delete()
+        Like.objects.filter(post_idpost = idpost).delete()
+        Tag.objects.filter(post_idpost = idpost).delete()
+        Postviews.objects.filter(post_idpost = idpost).delete()
+        
+        # 이미지 파일 삭제
+        image_instances = Image.objects.filter(post_idpost = idpost)
+        for image_instance in image_instances:
+            image_file_path = os.path.join(settings.MEDIA_ROOT, image_instance.image_path.name)
+            if os.path.isfile(image_file_path): # 이미지 삭제
+                os.remove(image_file_path)
+        curr_dir_path = os.path.dirname(image_file_path)
+        if os.path.exists(curr_dir_path): # 이미지 상위 폴더 삭제
+            os.rmdir(curr_dir_path)
+        image_instances.delete()
 
-            Review.objects.filter(post_idpost = idpost).delete()
-            Video.objects.filter(post_idpost = idpost).delete()
-            Post.objects.filter(idpost = idpost).delete()
+        Review.objects.filter(post_idpost = idpost).delete()
+        Video.objects.filter(post_idpost = idpost).delete()
+        Post.objects.filter(idpost = idpost).delete()
 
-            return JsonResponse({'message':'success'})
-        except Exception as e:
-            return JsonResponse({'message' : str(e)})
-
+        return JsonResponse({'message':'success'})
 
 class EditPost(APIView):
     def edit_body(self,post_body,idpost):
@@ -212,17 +212,17 @@ class EditPost(APIView):
         return 0
 
     def put(self,request,idpost):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
         
         post_instance = get_object_or_404(Post,pk = idpost)
         
         # 내용 수정
         if "post_body" in request.data:
-            post_body = request.data['post_body']  
+            post_body = request.data['post_body'] 
+            # post_body가 문자열인 경우에만 JSON 형식으로 변환
+            if isinstance(post_body, str):
+                post_body = json.loads(post_body)
             # post_body = json.loads(post_body)     
             edit_body = self.edit_body(
                 post_body = post_body,
@@ -232,7 +232,9 @@ class EditPost(APIView):
         # 키워드 수정
         if "post_tag" in request.data:
             new_tags = request.data['post_tag']
-            # new_tags = json.loads(new_tags)  
+            # post_body가 문자열인 경우에만 JSON 형식으로 변환
+            if isinstance(new_tags, str):
+                new_tags = json.loads(new_tags)
             self.edit_tag( 
                 post_instance=post_instance, 
                 new_tags=new_tags

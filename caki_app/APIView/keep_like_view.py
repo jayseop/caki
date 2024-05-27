@@ -10,13 +10,14 @@ from caki_app.APIView.user_api_views import access_token_authentication
 from mysite.settings import MAIN_DOMAIN
 import requests
 
+
+
+# 저장된 게시글
 class KeepPost(APIView):
     def get(self,request):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+        
         idmember = user_info['idmember']
         nickname = user_info['nickname']
 
@@ -35,14 +36,12 @@ class KeepPost(APIView):
         return res
             
     
-
+# 게시글 좋아요/ 취소
 class LikePost(APIView):  
     def get (self,request,idpost):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+
         idmember = user_info['idmember']
         # 좌표가 없으면 서울을 기준
         nx = int(self.request.GET.get('nx','55'))
@@ -66,14 +65,11 @@ class LikePost(APIView):
     
 
 
-
+# 게시글 저장/ 취소
 class AddKeep(APIView):
     def get (self,request,idpost):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
         idmember = user_info['idmember']
         member_instance = get_object_or_404(Member,pk= idmember)
         post_instance = get_object_or_404(Post,pk= idpost)

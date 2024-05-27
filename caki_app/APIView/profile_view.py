@@ -13,11 +13,9 @@ import requests
 
 class Profile(APIView):
     def get(self,request,profile_nick):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+
         idmember = user_info["idmember"]
         
         profile_instance = get_object_or_404(Member,nickname = profile_nick)
@@ -29,11 +27,12 @@ class Profile(APIView):
             post_list.append(post_preview)
 
         res = JsonResponse({
-            "user_id" : idmember,
+            "user_info" : user_info,
             "profile_info" : {
                 "idmember" :  profile_instance.idmember,
                 "nickname" : profile_nick,
                 "introduce" : profile_instance.introduce,
+                "qual" : profile_instance.qual,
                 "image_url" : get_member_image(profile_instance.idmember),
                 },
             "post_list" : post_list,
@@ -41,13 +40,12 @@ class Profile(APIView):
             })
 
         return res
-    # 게시글 수정
-    def put(self, request):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+    
+    # 프로필 수정
+    def put(self, request, profile_nick):
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+
             
         # 사용자 인증이 되었을 경우
         idmember = user_info['idmember']
@@ -90,18 +88,16 @@ class Profile(APIView):
             user.save()
 
         return JsonResponse({
-            "image_url" : user.image_path.url,
+            'user_info' : user_info,
             'message': 'success',
         }, status=status.HTTP_200_OK)
 
                     
 class DefultImage(APIView):
     def get(self, request):
-        try:
-            access_token = request.headers.get('Authorization').split(' ')[1]
-            user_info = access_token_authentication(access_token)
-        except Exception as e:
-            return{"message" : str(e)}
+
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
             
         # 사용자 인증이 되었을 경우
         idmember = user_info['idmember']
