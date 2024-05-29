@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from datetime import datetime, timedelta
 from django.db.models import Count
 import requests
+from mysite.settings import MAIN_DOMAIN, STATIC_URL,STATIC_ROOT
 
 # idpost를 외래키로 가진 테이블들을 하나로 통합하기 위함
 # idpost를 인자로 주면 흩어져있던 테이블들을 하나로 통합후 리턴
@@ -101,29 +102,21 @@ def get_weather(nx,ny):
 def get_member_image(idmember):
     try:
         member_image_path = get_object_or_404(Member,pk = idmember).image_path
-        return member_image_path.url
+        return MAIN_DOMAIN + member_image_path.url
     except:
-        return None
+        return MAIN_DOMAIN + os.path.join(STATIC_URL, "user.png")
+
 
 def get_post_image(post_intance):
     image_intances = Image.objects.filter(post_idpost = post_intance.pk)
     image_url = []
     for image_intance in image_intances:
-        image_url.append(image_intance.image_path.url)
-    if not image_url:
-        return None
-    return image_url
+        image_url.append(MAIN_DOMAIN + image_intance.image_path.url)
+    if image_url:
+        return image_url
+    else:    
+        return MAIN_DOMAIN + os.path.join(STATIC_URL, "cocktail.png")
 
-
-    
-def get_post_preview(post_instance):
-    preview = {
-        "writer_nickname" : post_instance.member_idmember.nickname,
-        "post_id" : post_instance.idpost,
-        "post_title" : post_instance.title,
-        "post_image" :  get_post_image(post_instance)
-    }
-    return preview
 
 def get_post_review(post_instance,idmember):
     post_reivew = Review.objects.filter(post_idpost = post_instance.pk)
@@ -139,3 +132,15 @@ def get_post_review(post_instance,idmember):
         }
         review.append(info)
     return review
+    
+
+def get_post_preview(post_instance):
+    preview = {
+        "writer_nickname" : post_instance.member_idmember.nickname,
+        "post_id" : post_instance.idpost,
+        "post_title" : post_instance.title,
+        "post_image" :  get_post_image(post_instance),
+        "post_tag" : get_post_tag(post_instance),
+        "post_like" : Like.objects.filter(post_idpost = post_instance.pk).count(),
+    }
+    return preview

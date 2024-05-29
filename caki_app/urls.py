@@ -61,4 +61,5 @@ urlpatterns = [
     path('defult_image/',DefultImage.as_view(), name= 'defultimage'),
 ] 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
     # 업로드 된 URL, 실제 파일 위치

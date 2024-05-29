@@ -29,6 +29,7 @@ class KeepPost(APIView):
             post_list.append(pull_posts)
 
         res = JsonResponse({
+            "user_info" : user_info,
             "post_list" : post_list,
             "message" : 'success'
             })

@@ -15,11 +15,12 @@ import requests
 import json
 from datetime import datetime, timedelta
 from pprint import pprint
+from django.utils import timezone
+
 
 
 class Main(APIView):
     def get_post_by_ranking(self,idmember):
-
         # 태그별 점수 부여
         tag_score={}
         score_ratio = 1
@@ -31,7 +32,6 @@ class Main(APIView):
                     tag_score[tag] += score_ratio
                 else:
                     tag_score[tag] = score_ratio
-
 
 
         # 예외 처리
@@ -62,7 +62,7 @@ class Main(APIView):
             keep_idpost_list = Keep.objects.filter(member_idmember = idmember).values_list('post_idpost', flat=True)
             
             # 7일 전 날짜 계산
-            current_date = timezone.localtime(timezone.now())
+            current_date = timezone.now()
             seven_days_ago = current_date - timedelta(days=7)
 
             for idpost in keep_idpost_list:
@@ -79,22 +79,23 @@ class Main(APIView):
         sorted_items = sorted(post_score.items(), key=lambda x: (x[1], x[0]), reverse=True)
         top_items = sorted_items[:10]
 
-        pprint(sorted_items)
-
-
         post_list = []
         for top_post in top_items:
             idpost = top_post[0] # ex) top_post = (idpost, score), ...
             post_instance = get_object_or_404(Post,pk = idpost)
             post_preview = get_post_preview(post_instance)
             post_list.append(post_preview)
+        post_by_ranking = {
+            "post_by_ranking" : post_list
+        }
 
-        return post_list
+        return post_by_ranking
 
 
 
     def get_post_by_like(self,idmember):
-        current_date = timezone.localtime(timezone.now())
+        current_date = timezone.now()
+        # current_date = datetime.strptime(timezone.get_current_timezone(), '%B %d, %Y')
         # 7일 전 날짜 계산
         seven_days_ago = current_date - timedelta(days=7)
         # 좋아요 테이블을 조회하고, 최근 7일 동안의 데이터만 필터링

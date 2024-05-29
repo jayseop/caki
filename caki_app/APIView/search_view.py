@@ -67,6 +67,7 @@ class Search(APIView):
         post_list = self.get_post_list(search_terms,keywords,idmember)
 
         res = JsonResponse({
+            "user_info" : user_info,
             "search": search_terms,
             "keywords" : keywords,
             "post_list":post_list,

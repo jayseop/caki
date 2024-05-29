@@ -88,7 +88,7 @@ class CreatePost (APIView):
         user_info = access_token_authentication(access_token)
 
         idmember = user_info['idmember']
-        
+        post_body = request.data['post_body']
         # post_body가 문자열인 경우에만 JSON 형식으로 변환
         if isinstance(post_body, str):
             post_body = json.loads(post_body)
@@ -249,7 +249,6 @@ class EditPost(APIView):
             )
 
         res = JsonResponse({
-            "edit_post": model_to_dict(edit_body),
             "message" : 'success'
             })
 

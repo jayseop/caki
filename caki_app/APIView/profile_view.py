@@ -49,6 +49,9 @@ class Profile(APIView):
             
         # 사용자 인증이 되었을 경우
         idmember = user_info['idmember']
+        nickname = user_info['nickname']
+        if nickname != profile_nick:
+            return JsonResponse({"message" : " nickname is not match"})
         
         user = get_object_or_404(Member,pk=idmember)
         
