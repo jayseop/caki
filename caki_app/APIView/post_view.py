@@ -9,6 +9,7 @@ from caki_app.APIView.get_others import *
 from mysite.settings import MAIN_DOMAIN
 import requests
 import json
+import re
 
 
 class PostView(APIView):
@@ -34,18 +35,34 @@ class PostView(APIView):
         member_instance = get_object_or_404(Member,pk=idmember)
         # 조회수 기록
         self.create_postviews(post_instance,member_instance)
+
+        text = post_instance.text
+        start = text.find("재료:") + len("재료:")
+        end = text.find("제조법")
+
+        # 재료 텍스트 추출
+        ingredients_text = text[start:end].strip()
+
+        # 재료를 쉼표로 분리하여 리스트로 만듦
+        ingredients_list = [ingredient.strip() for ingredient in ingredients_text.split(',')]
+        body = text[end+len("제조법"):].strip('\n')
+
         res = JsonResponse({
             "user_info" : user_info,
-            "post_writer" : {
-                "nickname" : get_post_writer(post_instance),
-                "image" : get_member_image(post_instance.member_idmember),
+            "post_info":{
+                "writer" : {
+                    "nickname" : get_post_writer(post_instance),
+                    "image" : get_member_image(post_instance.member_idmember),
+                },
+                "id" : post_instance.pk,
+                "title" : post_instance.title,
+                "ingredients":ingredients_list,
+                "body" : body,
+                "tag" : get_post_tag(post_instance),
+                "image" : get_post_image(post_instance),
+                "date" : post_instance.date,
             },
-            "post_body" : model_to_dict(post_instance),
-            "post_tag" : get_post_tag(post_instance),
-            "post_like" : get_post_like(post_instance,idmember),
-            "post_keep" : get_post_keep(post_instance,idmember),
-            "post_review" : get_post_review(post_instance,idmember),
-            "post_image" : get_post_image(post_instance),
+            "message" : 'success'
         })
         return res # 게시글 뷰
         
@@ -53,6 +70,17 @@ class PostView(APIView):
 
 
 class CreatePost (APIView):
+    def get(self,request):
+        access_token = request.headers.get('Authorization').split(' ')[1]
+        user_info = access_token_authentication(access_token)
+        
+        res = JsonResponse({
+            "user_info" : user_info,
+            "message" : 'success',
+        })
+
+        return res
+
     def create_post(self,post_title,post_text,idmember):
         member_instance = get_object_or_404(Member,pk = idmember)
 
@@ -114,16 +142,6 @@ class CreatePost (APIView):
 
         post_instance = new_post
         res = JsonResponse({
-            "user_info" : user_info,
-            "post_writer" : {
-                "name" : get_post_writer(post_instance),
-                "image" : get_member_image(post_instance.member_idmember),
-            },
-            "post_id" : post_instance.pk,
-            "post_body" : model_to_dict(post_instance),
-            "post_tag" : get_post_tag(post_instance),
-            "post_image" : get_post_image(post_instance),
-            "post_date" : post_instance.date,
             "message" : 'success'
             })
 

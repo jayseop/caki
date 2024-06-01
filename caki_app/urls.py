@@ -7,6 +7,7 @@ from .APIView.search_view import *
 from .APIView.main_view import *
 from .APIView.profile_view import *
 from .APIView.review_api_view import *
+from .APIView.send_email import *
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -16,6 +17,8 @@ app_name = 'caki_app'
 urlpatterns = [
     # 회원가입 - post
     path("signup/", SignupAPIView.as_view(), name='signup'),    
+    # email 인증 - post
+    path("signup/emailverifi/", EmailVerification.as_view(), name = "emailverifi"),
     # 로그인 - post, 로그아웃 - delete
     path('authuser/', AuthUserAPIView.as_view(), name='authuser'),
 

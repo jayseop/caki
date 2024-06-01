@@ -52,7 +52,6 @@ class Profile(APIView):
         nickname = user_info['nickname']
         if nickname != profile_nick:
             return JsonResponse({"message" : " nickname is not match"})
-        
         user = get_object_or_404(Member,pk=idmember)
         
         # 닉네임 변경
@@ -116,7 +115,6 @@ class DefultImage(APIView):
         member_instance.image_path = None
         member_instance.save()
         res = JsonResponse({
-            "image_url" : get_member_image(idmember),
             'message': 'success',
         })
         return res

@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
             qual = '',
             introduce = '',
             image_path = '',
+            is_active = False,
         )
         return user
     

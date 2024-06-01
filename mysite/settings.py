@@ -32,6 +32,10 @@ SECRET_KEY = secrets['SECRET_KEY']
 NAVER_CLIENT_ID = secrets['NAVER_CLIENT_ID']
 NAVER_CLIENT_SECRET = secrets['NAVER_CLIENT_SECRET']
 
+NAVER_PASSWORD = secrets['NAVER_PASSWORD']
+NAVER_ID = secrets['NAVER_ID']
+NAVER_EMAIL = secrets['NAVER_EMAIL']
+
 GOOGLE_CLIENT_ID = secrets['GOOGLE_CLIENT_ID']
 GOOGEL_CLIENT_SECRET = secrets['GOOGEL_CLIENT_SECRET']
 
@@ -40,6 +44,13 @@ ALLOWED_HOSTS = ['127.0.0.1','locallhost','13.124.205.29']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.naver.com'
+EMAIL_HOST_USER = NAVER_EMAIL
+EMAIL_HOST_PASSWORD = NAVER_PASSWORD
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Application definition

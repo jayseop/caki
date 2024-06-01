@@ -39,6 +39,7 @@ class Member(AbstractBaseUser):
     qual = models.CharField(max_length=4, blank=True)
     introduce = models.CharField(max_length=255, blank=True)
     image_path = models.ImageField(upload_to=member_upload_to, blank=True)
+    is_avtive = models.IntegerField(blank=True)
 
     last_login = None
 
