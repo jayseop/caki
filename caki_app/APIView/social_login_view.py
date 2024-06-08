@@ -31,9 +31,12 @@ class NaverLoginAPIView(APIView):
         url = "https://nid.naver.com/oauth2.0/authorize"
         
         # Document에 나와있는 요소들을 담아서 요청한다.
-        return redirect(
+        res = redirect(
             f'{url}?response_type={response_type}&client_id={client_id}&redirect_uri={uri}&state={state}'
         )
+        print(res)
+        return JsonResponse({"M" : res})
+
 
 
 class NaverCallbackAPIView(APIView):   

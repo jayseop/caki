@@ -39,6 +39,9 @@ NAVER_EMAIL = secrets['NAVER_EMAIL']
 GOOGLE_CLIENT_ID = secrets['GOOGLE_CLIENT_ID']
 GOOGEL_CLIENT_SECRET = secrets['GOOGEL_CLIENT_SECRET']
 
+DB_USER = secrets['DB_USER']
+DB_PASSWORD = secrets['DB_PASSWORD']
+
 ALLOWED_HOSTS = ['127.0.0.1','locallhost','13.124.205.29']
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -157,8 +160,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'bartender',
-        'USER': 'root',
-        'PASSWORD': 'root',
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
         'HOST': secrets["DB_HOST"],
         'PORT': '3306',
     }

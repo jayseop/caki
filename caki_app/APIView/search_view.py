@@ -40,10 +40,17 @@ class Search(APIView):
             query |= Q(title__icontains = term)| Q(text__icontains = term) #제목과 본문 필터링
         post_instances = Post.objects.filter(query).order_by('-date').distinct() #distinct() -> 중복값 제거
         
+        not_expert = False
+        if "인증 ☓" in keywords:
+            keywords.remove('인증 ☓')
+            not_expert = True
+
         post_list=[]
         for post_instance in post_instances:
             # 게시글의 테마 가져옴
             post_tag = get_post_tag(post_instance)
+            if not_expert and "expert" in post_tag:
+                continue
 
             #keyword가 post_theme의 부분집합일때
             if set(keywords).issubset(set(post_tag)) or keywords == [''] :
@@ -62,6 +69,9 @@ class Search(APIView):
 
         search = self.request.GET.get('q','')
         keywords = self.request.GET.get("k",'').split(',')
+
+        if "인증 ◯" in keywords:
+            keywords = [keyword if keyword != "인증 ◯" else "expert" for keyword in keywords]
 
         search_terms = self.split_text(search) # 한글, 영어, 숫자로 검색어 분할
         post_list = self.get_post_list(search_terms,keywords,idmember)

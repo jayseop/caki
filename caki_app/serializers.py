@@ -13,10 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
             email = validated_data['email'],
             password = validated_data['password'],
             nickname = validated_data['nickname'],
-            qual = '',
-            introduce = '',
-            image_path = '',
-            is_active = False,
         )
         return user
     

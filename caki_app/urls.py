@@ -8,6 +8,8 @@ from .APIView.main_view import *
 from .APIView.profile_view import *
 from .APIView.review_api_view import *
 from .APIView.send_email import *
+from .APIView.preference_view import *
+from .APIView.shop_list_view import *
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -27,14 +29,18 @@ urlpatterns = [
      
     #소셜 로그인
     path('authuser/naver/login/', NaverLoginAPIView.as_view()),
-    path('authuser/naver/callback', NaverCallbackAPIView.as_view()),
-    path('authuser/google/login/', GoogleLoginAPIView.as_view()),
-    path('authuser/google/callback', GoogleCallbackAPIView.as_view()),
+    # path('authuser/naver/callback/', NaverCallbackAPIView.as_view()),
+    # path('authuser/google/login/', GoogleLoginAPIView.as_view()),
+    # path('authuser/google/callback/', GoogleCallbackAPIView.as_view()),
 
     # 메인뷰
     path('main/',Main.as_view(),name="main"),
+    # 취향 선택
+    path('preference/',InsertPreference.as_view(), name = 'preference'),
     # 카테고리별 뷰
     path('main/<str:category>/',AlcoholCategory.as_view(),name = 'alcoholcategory'),
+    # 가게 리스트
+    path ('shoplist/',ShopList.as_view(),name = 'shoplist'),
 
     # 게시글 보기
     path('postview/<int:idpost>/',PostView.as_view(),name='postview'),
@@ -58,10 +64,11 @@ urlpatterns = [
     # 검색
     path('search/',Search.as_view(), name = 'searchpost'),
 
-    # 프로필 뷰 - get, 수정 - put 
-    path('<str:profile_nick>/',Profile.as_view(), name = 'profile'),
     # 프로필 기본 사진 변경
     path('defult_image/',DefultImage.as_view(), name= 'defultimage'),
+    
+    # 프로필 뷰 - get, 수정 - put 
+    path('<str:profile_nick>/',Profile.as_view(), name = 'profile'),
 ] 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)

@@ -1,7 +1,9 @@
 from caki_app.models import *
 from django.shortcuts import get_object_or_404
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.db.models import Count
+from pprint import pprint
 import requests
 from mysite.settings import MAIN_DOMAIN, STATIC_URL,STATIC_ROOT
 
@@ -32,7 +34,7 @@ def get_post_like(post_instance,idmember):
 def get_post_keep(post_instance,idmember):
     keep_exists = Keep.objects.filter(post_idpost = post_instance,member_idmember = idmember).exists()
     post_keep = {
-        "keep_exists": True if keep_exists else False # 저장 눌렀는지 확인
+        "exists": True if keep_exists else False # 저장 눌렀는지 확인
     }
     return post_keep
 
@@ -40,7 +42,7 @@ def get_post_keep(post_instance,idmember):
 def get_weather(nx,ny):
     try :
         servicKey = "E0xO46EqNfkCv7qI51m8bsZfMYiBEf1schQIQsWB1HemjzDnO9h+zbqGlpitexL2OS2jmOT++KTXl0cC2kjQ7A=="
-        local_time = timezone.localtime(timezone.now())
+        local_time = timezone.make_aware(timezone.now())
         date = local_time.date()
         time = local_time.time()
 
@@ -53,31 +55,30 @@ def get_weather(nx,ny):
 
         base_date = adjusted_datetime.strftime('%Y%m%d')
         base_time = adjusted_datetime.strftime('%H00')
-
         url = 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst'
-        params ={'serviceKey' :servicKey, 
-                 'pageNo' : '1', 
-                 'numOfRows' : '20', 
-                 'dataType' : 'json', 
-                 'base_date' : base_date, 
-                 'base_time' : base_time, 
-                 'nx' : nx, 
-                 'ny' : ny,
+        params ={
+            'serviceKey' :servicKey, 
+            'pageNo' : '1', 
+            'numOfRows' : '25', 
+            'dataType' : 'json', 
+            'base_date' : base_date, 
+            'base_time' : base_time, 
+            'nx' : nx, 
+            'ny' : ny,
         }
 
         response = requests.get(url,params=params)
         res_dict = response.json() # json -> dict 
 
         item_list = res_dict['response']['body']['items']['item']
-        
         curr_weather_list = []
         for item in item_list:
             if item['fcstTime'] == time.strftime("%H00"): # 현재시간만 추출
                 if item['category'] == 'PTY' or item['category'] == 'SKY': # 강수량과 하늘 상황만 추출
                     curr_weather_list.append(item)
 
-        pty_code = {0 : '강수 없음', 1 : '비', 2 : '비/눈', 3 : '눈', 5 : '빗방울', 6 : '진눈깨비', 7 : '눈날림'}
-        sky_code = {1 : '맑음', 3 : '구름많음', 4 : '흐림'}
+        # pty_code = {0 : '강수 없음', 1 : '비', 2 : '비/눈', 3 : '눈', 5 : '빗방울', 6 : '진눈깨비', 7 : '눈날림'}
+        # sky_code = {1 : "맑음", 3 : "구름많음", 4 : "흐림"}
 
         for curr_weather in curr_weather_list: 
             if curr_weather['category'] == "PTY":
@@ -86,18 +87,23 @@ def get_weather(nx,ny):
                 sky_key = int(curr_weather['fcstValue']) # 하늘 코드
         
         if pty_key == 0:
-            weather = sky_code[sky_key]
+            if sky_key == 1:
+                weather = "맑음"
+            elif sky_key == 3:
+                weather = "구름많음"
+            elif sky_key == 4:
+                weather = "흐림"
         else :
-            if pty_key == 1 or pty_key == 2 or pty_key == 5:
+            if pty_key in [1,2,5]:
                 weather = "비"
-            if pty_key == 3 or pty_key == 6 or pty_key ==7:
+            if pty_key in [3,6,7]:
                 weather = "눈"
 
 
         return weather 
     
     except Exception as e:
-        return str(e)
+        return "정보 없음"
     
 def get_member_image(idmember):
     try:

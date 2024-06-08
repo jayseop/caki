@@ -22,14 +22,6 @@ def access_token_authentication(access_token):
     }
     return user_info
 
-# 회원가입 test용
-# {
-# 	  "email": "skxcv312@naver.com",
-#     "password":"1234",
-#     "nickname":"jaja",
-#     "qual": "on",
-#     "introduce":"hi" 
-# }
 
 #회원가입
 class SignupAPIView(APIView):
@@ -101,9 +93,10 @@ class AuthUserAPIView(APIView):
             res.set_cookie("refresh", refresh_token, httponly=True)
             return res
         else:
-            return JsonResponse({
-                'message' : 'email not available'
-            },status.HTTP_400_BAD_REQUEST)
+            res = JsonResponse({
+                'message' : 'email or password not available',
+            },status=status.HTTP_406_NOT_ACCEPTABLE)
+            return res
 
     # 로그아웃
     def delete(self,request):

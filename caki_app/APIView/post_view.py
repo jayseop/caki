@@ -53,6 +53,7 @@ class PostView(APIView):
                 "writer" : {
                     "nickname" : get_post_writer(post_instance),
                     "image" : get_member_image(post_instance.member_idmember),
+                    "qual" : post_instance.member_idmember.qual,
                 },
                 "id" : post_instance.pk,
                 "title" : post_instance.title,
@@ -61,6 +62,8 @@ class PostView(APIView):
                 "tag" : get_post_tag(post_instance),
                 "image" : get_post_image(post_instance),
                 "date" : post_instance.date,
+                "like" : get_post_like(post_instance,idmember),
+                "keep" : get_post_keep(post_instance,idmember)
             },
             "message" : 'success'
         })
@@ -128,14 +131,14 @@ class CreatePost (APIView):
             )
 
         # 키워드 저장cd ../
-        if 'post_tag' in request.data:
+        if request.data.get('post_tag',None):
             tags = request.data['post_tag']
             if isinstance(tags, str):
                 tags = json.loads(tags)
             self.create_tag(new_post, tags)
 
         # 사진 저장
-        if 'post_image' in request.FILES:
+        if request.FILES.getlist('post_image',None):
             images = request.FILES.getlist('post_image')
             self.creat_image(new_post,images)
             
@@ -163,13 +166,8 @@ class DeletePost(APIView):
         # 이미지 파일 삭제
         image_instances = Image.objects.filter(post_idpost = idpost)
         for image_instance in image_instances:
-            image_file_path = os.path.join(settings.MEDIA_ROOT, image_instance.image_path.name)
-            if os.path.isfile(image_file_path): # 이미지 삭제
-                os.remove(image_file_path)
-        curr_dir_path = os.path.dirname(image_file_path)
-        if os.path.exists(curr_dir_path): # 이미지 상위 폴더 삭제
-            os.rmdir(curr_dir_path)
-        image_instances.delete()
+            image_instance.delete()
+
 
         Review.objects.filter(post_idpost = idpost).delete()
         Video.objects.filter(post_idpost = idpost).delete()
@@ -177,18 +175,7 @@ class DeletePost(APIView):
 
         return JsonResponse({'message':'success'})
 
-class EditPost(APIView):
-    def edit_body(self,post_body,idpost):
-        post_instance = get_object_or_404(Post,pk = idpost)
-        post_instance.title = post_body['title']
-        post_instance.text = post_body['text']
-
-        post_instance.date = timezone.localtime(timezone.now())
-        post_instance.save()
-        # 생성된 게시글의 기본키
-        return post_instance 
-    
-
+class EditPost(APIView):   
     def edit_tag(self,post_instance,new_tags):
         exist_tag_instances = Tag.objects.filter(post_idpost = post_instance.pk)
         exist_tags = []
@@ -210,22 +197,16 @@ class EditPost(APIView):
     
     def edit_image(self,post_instance,new_images):
         exist_image_instances = Image.objects.filter(post_idpost = post_instance.pk)
-        exist_image = []
-        for exist_image_instance in  exist_image_instances:
-            exist_image.append(exist_image_instance.image_name)    
 
-
-        for image in exist_image: 
-            if image not in new_images:
-                Image.objects.get(post_idpost = post_instance.pk, image_name = image).delete()
+        for exist_image in exist_image_instances:
+            exist_image.delete()
 
         for image in new_images: 
-            if image not in exist_image :
-                Image.objects.create(
-                    image_name = image,
-                    image_path = image,
-                    post_idpost = post_instance
-                )
+            Image.objects.create(
+                image_name = image,
+                image_path = image,
+                post_idpost = post_instance
+            )
 
         return 0
 
@@ -236,20 +217,19 @@ class EditPost(APIView):
         post_instance = get_object_or_404(Post,pk = idpost)
         
         # 내용 수정
-        if "post_body" in request.data:
-            post_body = request.data['post_body'] 
-            # post_body가 문자열인 경우에만 JSON 형식으로 변환
-            if isinstance(post_body, str):
-                post_body = json.loads(post_body)
-            # post_body = json.loads(post_body)     
-            edit_body = self.edit_body(
-                post_body = post_body,
-                idpost = idpost
-                )
+        new_title = request.data.get('post_title',None)
+        if new_title:
+            post_instance.title = new_title
+
+        new_text = request.data.get('post_text',None)
+        if new_text:
+            post_instance.text = new_text
+
+        post_instance.save()
 
         # 키워드 수정
-        if "post_tag" in request.data:
-            new_tags = request.data['post_tag']
+        new_tags = request.data.get('post_tag',None)
+        if  new_tags:
             # post_body가 문자열인 경우에만 JSON 형식으로 변환
             if isinstance(new_tags, str):
                 new_tags = json.loads(new_tags)
@@ -259,8 +239,9 @@ class EditPost(APIView):
             )
         
         # 사진 수정
-        if "post_image" in request.FILES:
-            new_images = request.FILES.getlist('post_image')
+        new_images =request.FILES.getlist('post_image',None)
+        if new_images:
+            print(f"new_images : {new_images}")
             self.edit_image( 
                 post_instance = post_instance,
                 new_images = new_images,

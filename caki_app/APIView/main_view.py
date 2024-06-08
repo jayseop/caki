@@ -23,16 +23,24 @@ class Main(APIView):
     def get_post_by_ranking(self,idmember):
         # 태그별 점수 부여
         tag_score={}
-        score_ratio = 1
         idpost_list = Postviews.objects.filter(member_idmember = idmember).values_list('post_idpost', flat=True)
         for idpost in idpost_list:
             tag_list = Tag.objects.filter(post_idpost = idpost).values_list('tag', flat=True)
             for tag in tag_list:
                 if tag in tag_score:
-                    tag_score[tag] += score_ratio
+                    tag_score[tag] += 1
                 else:
-                    tag_score[tag] = score_ratio
+                    tag_score[tag] = 1
 
+        # 취향 점수 매기기
+        member_preference = Preference.objects.get(member_idmember = idmember).preference
+        
+        preference_list = member_preference.split(',')
+        for preference in preference_list:
+            if preference in tag_score:
+                tag_score[preference] += 3
+            else:
+                tag_score[preference] = 3
 
         # 예외 처리
         query = Q() #쿼리 객체 생성
@@ -58,13 +66,14 @@ class Main(APIView):
                 if idpost in post_score:
                     post_score[idpost] += tag_score.get(tag, 0)
             
+
+
             # 저장한 게시글 유저가 쓴 다른 게시글 
             keep_idpost_list = Keep.objects.filter(member_idmember = idmember).values_list('post_idpost', flat=True)
             
             # 7일 전 날짜 계산
-            current_date = timezone.now()
+            current_date = timezone.make_aware(timezone.now())
             seven_days_ago = current_date - timedelta(days=7)
-
             for idpost in keep_idpost_list:
                 post_idmember = Post.objects.get(pk = idpost).member_idmember.pk
                 recent_idpost_list = Post.objects.filter(member_idmember = post_idmember,date__gte=seven_days_ago).values_list('idpost', flat=True)
@@ -72,6 +81,8 @@ class Main(APIView):
                 for idpost in recent_idpost_list:
                     if idpost in post_score:
                         post_score[idpost] += 1/8
+
+
             
 
 
@@ -85,11 +96,9 @@ class Main(APIView):
             post_instance = get_object_or_404(Post,pk = idpost)
             post_preview = get_post_preview(post_instance)
             post_list.append(post_preview)
-        post_by_ranking = {
-            "post_by_ranking" : post_list
-        }
 
-        return post_by_ranking
+
+        return post_list
 
 
 
@@ -112,11 +121,7 @@ class Main(APIView):
             post_instance = get_object_or_404(Post,pk = idpost)
             post_preview = get_post_preview(post_instance)
             post_list.append(post_preview)
-
-        post_by_like = {
-            "post_by_like" : post_list
-        }
-        return post_by_like
+        return post_list
     
     def get_post_by_weather(self,idmember,nx,ny):
         weather = get_weather(nx,ny)
@@ -134,10 +139,32 @@ class Main(APIView):
             post_preview = get_post_preview(post_instance)
             post_list.append(post_preview)
 
-        post_by_weather = {
-            "post_by_weather" : post_list
-        }
-        return post_by_weather
+
+        return post_list
+    
+
+    def get_post_by_day(self,idmember):
+        local_time = timezone.make_aware(timezone.now())
+        # 요일을 확인 (0: 월요일, 1: 화요일, ..., 6: 일요일)
+        weekday_index = local_time.weekday()
+        
+        if weekday_index == 4 or weekday_index == 5:
+            weekday_tag_post = Tag.objects.filter(Q(tag='도수2') | Q(tag='도수3')).values_list('post_idpost') # 주말
+        else :
+            weekday_tag_post = Tag.objects.filter(Q(tag='도수1') | Q(tag='도수2')).values_list('post_idpost') # 평일
+
+        # 조회수 테이블에서 해당하는 데이터 필터링
+        top_post_review = Postviews.objects.filter(post_idpost__in=weekday_tag_post).values('post_idpost').annotate(
+            postviews_num=Count('post_idpost')
+        ).order_by('-postviews_num','-post_idpost')[:10]
+
+        post_list = []
+        for top_post in top_post_review:
+            idpost = top_post['post_idpost']
+            post_instance = get_object_or_404(Post,pk = idpost)
+            post_preview = get_post_preview(post_instance)
+            post_list.append(post_preview)
+        return post_list
 
     def get(self,request):
         access_token = request.headers.get('Authorization').split(' ')[1]
@@ -145,20 +172,27 @@ class Main(APIView):
         idmember = user_info['idmember']
         nickname = user_info['nickname']
 
-        weekly_trends = []
-        weekly_trends.append(self.get_post_by_like(idmember)) # 좋아요 많이 받은 순
+        weekly_trends = {}
+        weekly_trends['post_by_like'] = self.get_post_by_like(idmember) # 좋아요 많이 받은 순
        
         # 현재 날씨에 좋아요 많이 받은 순
         # 좌표가 없으면 서울을 기준
         nx = int(self.request.GET.get('nx','55'))
         ny = int(self.request.GET.get('ny','127'))
-        weekly_trends.append(self.get_post_by_weather(idmember,nx,ny)) 
+        weekly_trends['post_by_weather'] = self.get_post_by_weather(idmember,nx,ny)
 
-        weekly_trends.append(self.get_post_by_ranking(idmember))
+        weekly_trends['post_by_ranking'] = self.get_post_by_ranking(idmember)
+        weekly_trends['post_by_day'] = self.get_post_by_day(idmember)
+        weather = get_weather(nx,ny)
+
+        print(f"Response Weather: {weather}")
+
         res = JsonResponse({
             "user_info" : user_info,
+            "weather" : weather,
             "weekly_trends" : weekly_trends,
         })
+
         return res
     
 class AlcoholCategory(APIView):

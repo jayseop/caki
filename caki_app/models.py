@@ -8,15 +8,12 @@ import os
 
 # Custom user manager
 class UserManager(BaseUserManager):
-    def create_user(self, email, password, nickname, qual, introduce, image_path, **kwargs):
+    def create_user(self, email, password, nickname, **kwargs):
         if not email:
             raise ValueError('Users must have an email address')
         user = self.model(
             email=email,
             nickname=nickname,
-            qual=qual,
-            introduce=introduce,
-            image_path=image_path
         )
         user.set_password(password)
         user.save(using=self._db)
@@ -36,10 +33,10 @@ class Member(AbstractBaseUser):
     password = models.CharField(max_length=130)
     nickname = models.CharField(unique=True, max_length=45)
     date = models.DateTimeField(auto_now=True)
-    qual = models.CharField(max_length=4, blank=True)
-    introduce = models.CharField(max_length=255, blank=True)
-    image_path = models.ImageField(upload_to=member_upload_to, blank=True)
-    is_avtive = models.IntegerField(blank=True)
+    qual = models.IntegerField(blank=True,default = 0)
+    introduce = models.CharField(max_length=255, blank=True,default = '')
+    image_path = models.ImageField(upload_to=member_upload_to, blank=True, default = '')
+    is_avtive = models.IntegerField(blank=True, default = 1)
 
     last_login = None
 
@@ -49,9 +46,16 @@ class Member(AbstractBaseUser):
     class Meta:
         db_table = 'member'
 
-    def delete(self, *args, **kargs):
-        os.remove(os.path.join(settings.MEDIA_ROOT, self.image_path.name))
-        return super(Member, self).delete(*args, **kargs)
+    def delete_image(self, *args, **kwargs):
+        if self.image_path:
+            path = os.path.join(settings.MEDIA_ROOT, self.image_path.name)
+            dir_name = os.path.dirname(path)
+            os.remove(path)
+            if not os.listdir(dir_name):
+                os.rmdir(dir_name)
+            self.image_path = ''
+            
+        return self.save(*args, **kwargs)
 
 # Function to define upload path for Post images
 def post_upload_to(instance, filename):
@@ -91,7 +95,11 @@ class Image(models.Model):
         db_table = 'image'
 
     def delete(self, *args, **kargs):
-        os.remove(os.path.join(settings.MEDIA_ROOT, self.image_path.name))
+        path = os.path.join(settings.MEDIA_ROOT, self.image_path.name)
+        dir_name = os.path.dirname(path)
+        os.remove(path)
+        if not os.listdir(dir_name):
+            os.rmdir(dir_name)
         return super(Image, self).delete(*args, **kargs)
 
 # Ingredient model
@@ -154,6 +162,15 @@ class Tag(models.Model):
 
     class Meta:
         db_table = 'tag'
+
+class Preference(models.Model):
+    idpreference = models.IntegerField(db_column='idPreference', primary_key=True)  # Field name made lowercase.
+    member_idmember = models.ForeignKey(Member, models.DO_NOTHING, db_column='Member_idMember')  # Field name made lowercase.
+    preference = models.CharField(db_column='Preference', max_length=45, blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'preference'
 
 # Video model
 class Video(models.Model):

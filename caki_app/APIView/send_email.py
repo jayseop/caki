@@ -1,9 +1,5 @@
 from django.template.loader import render_to_string
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
-from django.contrib import messages
 from rest_framework.views import APIView
 from caki_app.models import  *
 from django.http import JsonResponse
@@ -14,14 +10,14 @@ import string
 
 def send_email(request, to_email,code):
     # 이메일 본문 텍스트
-    message = (
-        f"안녕하세요.\n\n"
-        f"CAKI_APP에 오신 것을 환영합니다! 아래 코드를 입력하여 EMAIL을 활성화하세요:\n\n"
-        f"{code}\n\n"
-        "만약 이 메일을 요청하지 않으셨다면, 이 메일을 무시하셔도 됩니다.\n\n"
-        "감사합니다,\n"
-        "CAKI_APP 팀"
-    )
+    # message = (
+    #     f"안녕하세요.\n\n"
+    #     f"CAKI_APP에 오신 것을 환영합니다! 아래 코드를 입력하여 EMAIL을 활성화하세요:\n\n"
+    #     f"{code}\n\n"
+    #     "만약 이 메일을 요청하지 않으셨다면, 이 메일을 무시하셔도 됩니다.\n\n"
+    #     "감사합니다,\n"
+    #     "CAKI_APP 팀"
+    # )
 
     # 이메일 전송
     email = EmailMessage(

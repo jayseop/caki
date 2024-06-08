@@ -50,71 +50,80 @@ class Profile(APIView):
         # 사용자 인증이 되었을 경우
         idmember = user_info['idmember']
         nickname = user_info['nickname']
-        if nickname != profile_nick:
-            return JsonResponse({"message" : " nickname is not match"})
         user = get_object_or_404(Member,pk=idmember)
         
         # 닉네임 변경
-        if 'nickname' in request.data:
-            new_nickname = request.data['nickname']
+        new_nickname = request.data.get('nickname',None)
+        if  new_nickname:
             existing_user = Member.objects.filter(nickname=new_nickname).exists()
-
             if existing_user:
                 return JsonResponse({
                     'message': 'nickname already exist',
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             user.nickname = new_nickname
-            user.save()
+
+
+        # 이메일 변경
+        new_email = request.data.get('email',None)
+        if  new_email:
+            existing_user = Member.objects.filter(email=new_email).exists()
+            if existing_user:
+                return JsonResponse({
+                    'message': 'email already exist',
+                }, status=status.HTTP_400_BAD_REQUEST)
+            user.email = new_email
+
 
         # 비밀번호 변경
-        if 'password' in request.data:
-            new_password = request.data['password']
+        new_password = request.data.get('password',None)
+        if  new_password:
             user.set_password(new_password)
-            user.save()
+ 
             
         # 자기소개 변경
-        if 'introduce' in request.data:
+        new_introduce =request.data.get('introduce',None)
+        if new_introduce:
             new_introduce = request.data['introduce']
             user.introduce = new_introduce
-            user.save()
-        
-        # 사진 변경
-        if 'image' in request.FILES:
-            if get_member_image(user.idmember): #기존 사진 삭제
-                image_file_path = os.path.join(settings.MEDIA_ROOT, user.image_path.name)
-                os.remove(image_file_path)# 이미지 삭제
 
-            new_image = request.FILES['image']
+
+        # 사진 변경
+        new_image = request.FILES.get('image',None)
+        
+        if new_image:
+            if user.image_path: #기존 사진 삭제
+               user.delete_image()
             user.image_path = new_image
-            user.save()
+        
+        user.save()
+
+        token = LoginSerializer.get_token(user)
+        refresh_token = str(token)
+        access_token = str(token.access_token)
 
         return JsonResponse({
-            'user_info' : user_info,
+            "user_info" : {
+                "idmember" :  user.idmember,
+                "nickname" : user.nickname,
+                "introduce" : user.introduce,
+                "qual" : user.qual,
+                "image_url" : get_member_image(user.idmember),
+                },
+            "access_token" : access_token,
+            "refresh_token" : refresh_token,
             'message': 'success',
         }, status=status.HTTP_200_OK)
 
                     
-class DefultImage(APIView):
+class DefultImage(APIView):   
     def get(self, request):
-
         access_token = request.headers.get('Authorization').split(' ')[1]
         user_info = access_token_authentication(access_token)
-            
         # 사용자 인증이 되었을 경우
         idmember = user_info['idmember']
-        member_instance = get_object_or_404(Member,pk = idmember)
-
-        image_file_path = os.path.join(settings.MEDIA_ROOT, member_instance.image_path.name)
-        curr_dir_path = os.path.dirname(image_file_path)
-        if os.path.isfile(image_file_path): # 이미지 삭제
-            os.remove(image_file_path)
-        if os.path.exists(curr_dir_path): # 이미지 상위 폴더 삭제
-            os.rmdir(curr_dir_path)
-        
-        member_instance.image_path = None
-        member_instance.save()
-        res = JsonResponse({
-            'message': 'success',
-        })
-        return res
+        member_instance = Member.objects.get(pk = idmember)
+        if member_instance.image_path == '':
+            return JsonResponse({"message" : "profile image is defult"})
+        member_instance.delete_image()
+        return JsonResponse({'message': 'success'})
